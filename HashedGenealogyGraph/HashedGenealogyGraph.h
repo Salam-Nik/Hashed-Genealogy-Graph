@@ -3,7 +3,7 @@
 
 #include <map>
 #include <set>
-#include "sha256/sha256.h"  // Assuming this header is available in your project
+#include "sha256/sha256.h" 
 
 enum RelationType
 {
@@ -35,11 +35,17 @@ public:
 
     bool isAncestor(const Person &person1, const Person &person2);
 
+    bool isDistantRelative(const Person& person1, const Person& person2);
+
     bool isSibling(const Person &person1, const Person &person2);
+
+    void findAllAncestors(const Person &person1, std::set<std::string>& ancestors1);
 
     std::string findCommonAncestor(const Person &person1, const Person &person2);
 
     int findFurthestDescendant(const Person &person);
+
+    
 };
 
 #endif

@@ -36,9 +36,9 @@ bool HashedGenealogyGraph::isAncestor(const Person &person1, const Person &perso
     for (const auto &pair : adjacencyList[person2])
     {
         if (pair.second == Parent && pair.first.hashValue == person1.hashValue)
-        {
             return true;
-        }
+        else if(pair.second == Parent)
+            return isAncestor(person1, pair.first);
     }
     return false;
 }
@@ -61,23 +61,40 @@ bool HashedGenealogyGraph::isSibling(const Person &person1, const Person &person
     return false;
 }
 
-std::string HashedGenealogyGraph::findCommonAncestor(const Person &person1, const Person &person2)
-{
-    std::set<std::string> ancestors1;
+bool HashedGenealogyGraph::isDistantRelative(const Person& person1, const Person& person2) {
 
+    if(!isAncestor(person1, person2) && !isAncestor(person2, person1) && findCommonAncestor(person1,person2) !="")
+        return true;
+
+    return false;
+
+}
+void HashedGenealogyGraph::findAllAncestors(const Person &person1, std::set<std::string>& ancestors1)
+{
     for (const auto &pair : adjacencyList[person1])
     {
         if (pair.second == Parent)
         {
             ancestors1.insert(pair.first.hashValue);
+            findAllAncestors(pair.first, ancestors1);
         }
     }
+}
+std::string HashedGenealogyGraph::findCommonAncestor(const Person &person1, const Person &person2)
+{
+    std::set<std::string> ancestors1;
 
-    for (const auto &pair : adjacencyList[person2])
+    std::set<std::string> ancestors2;
+
+    findAllAncestors(person1, ancestors1);
+
+    findAllAncestors(person2, ancestors2);
+
+    for (const auto &pair : ancestors2)
     {
-        if (pair.second == Parent && ancestors1.count(pair.first.hashValue))
+        if (ancestors1.count(pair))
         {
-            return pair.first.hashValue;
+            return pair;
         }
     }
 
