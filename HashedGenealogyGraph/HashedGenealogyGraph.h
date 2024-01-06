@@ -27,7 +27,7 @@ public:
     void addEdge(const std::string &n1, const std::string &ln1, const int &id1,
                  const std::string &n2, const std::string &ln2, const int &id2, RelationType relation);
 
-    bool HashedGenealogyGraph::isAncestor(const std::string &person1, const std::string &person2);
+    bool isAncestor(const std::string &person1, const std::string &person2);
 
     bool isAncestor(const std::string &n1, const std::string &ln1, const int &id1,
                     const std::string &n2, const std::string &ln2, const int &id2);
@@ -40,7 +40,7 @@ public:
 
     void findAllAncestors(const std::string &person1, std::set<std::string> &ancestors1);
 
-    std::string HashedGenealogyGraph::findCommonAncestor(const std::string &person1, const std::string &person2);
+    std::string findCommonAncestor(const std::string &person1, const std::string &person2);
 
     std::string findCommonAncestor(const std::string &n1, const std::string &ln1, const int &id1,
                                    const std::string &n2, const std::string &ln2, const int &id2);

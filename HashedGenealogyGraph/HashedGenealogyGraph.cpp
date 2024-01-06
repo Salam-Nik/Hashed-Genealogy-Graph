@@ -1,5 +1,21 @@
+
+#include <pybind11/pybind11.h>
 #include "HashedGenealogyGraph.h"
 
+namespace py = pybind11;
+
+void init_your_project_name(pybind11::module& m) {
+    py::class_<HashedGenealogyGraph>(m, "HashedGenealogyGraph")
+        .def(py::init<bool>())
+        .def("addEdge", &HashedGenealogyGraph::addEdge)
+        .def("isAncestor", &HashedGenealogyGraph::isAncestor)
+        .def("findCommonAncestor", &HashedGenealogyGraph::findCommonAncestor);
+}
+
+// The following macro creates the entry point for the Python module
+PYBIND11_MODULE(your_project_name, m) {
+    init_your_project_name(m);
+}
 
 HashedGenealogyGraph::HashedGenealogyGraph(const bool autoSave) : auto_save(autoSave)
 {
