@@ -1,10 +1,6 @@
-#ifndef SHA256_H
-#define SHA256_H
-
+#pragma once
 #include <iostream>
 #include <vector>
-
-namespace SHA256 {
 
 class SHA256 {
 public:
@@ -36,6 +32,4 @@ private:
     static std::string hashVectorToString(const std::vector<std::vector<unsigned int>> &hashVector);
 };
 
-} // namespace SHA256
 
-#endif // SHA256_H

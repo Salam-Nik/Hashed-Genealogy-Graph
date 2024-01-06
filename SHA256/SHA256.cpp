@@ -1,11 +1,9 @@
-#include "sha256.h"
+#include "SHA256.h"
 #include <cmath>
 #include <iomanip>
 #include <sstream>
 
 
-namespace SHA256
-{
 
     const unsigned int K[] = {
         0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -68,27 +66,7 @@ namespace SHA256
         return M;
     }
 
-    std::vector<std::vector<unsigned int>> SHA256::parsingMessage(std::vector<unsigned char> bytes)
-    {
-        std::vector<std::vector<unsigned int>> M;
-        unsigned int n = 0;
-        for (int i = 0; n < bytes.size() / 64; ++n)
-        {
-            std::vector<unsigned int> block(16);
-            for (int j = 0; j < 16; ++j)
-            {
-                unsigned int word = 0;
-                for (int k = 0; k < 4; ++k, ++i)
-                {
-                    word <<= 8;
-                    word |= bytes[i];
-                }
-                block[j] = word;
-            }
-            M.push_back(block);
-        }
-        return M;
-    }
+
 
     std::vector<std::vector<unsigned int>> SHA256::parsingMessage(std::vector<unsigned char> bytes)
     {
@@ -236,4 +214,3 @@ namespace SHA256
         return hashString;
     }
 
-} // namespace SHA256

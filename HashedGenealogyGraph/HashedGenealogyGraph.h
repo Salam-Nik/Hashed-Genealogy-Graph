@@ -1,9 +1,10 @@
-#ifndef HASHEDGENEALOGYGRAPH_H
-#define HASHEDGENEALOGYGRAPH_H
-
+#pragma once
 #include <map>
 #include <set>
-#include "sha256/sha256.h" 
+#include <fstream>
+#include "SHA256.h" 
+#include <algorithm>
+
 
 enum RelationType
 {
@@ -12,40 +13,44 @@ enum RelationType
     Parent
 };
 
-struct Person
-{
-    std::string hashValue;
-
-    Person(const std::string &n, const std::string &ln, int i);
-};
-
 class HashedGenealogyGraph
 {
 private:
     bool auto_save;
-    std::map<Person, std::vector<std::pair<Person, RelationType>>> adjacencyList;
-    std::map<std::string, Person> nodeMap;
+    std::map<std::string, std::vector<std::pair<std::string, RelationType>>> adjacencyList;
+    std::map<std::string, std::string> nodeMap;
+    
 
 public:
     HashedGenealogyGraph(const bool autoSave = true);
 
-    void addEdge(const Person &source, const Person &destination, RelationType relation);
+    void addEdge(const std::string &n1, const std::string &ln1, const int &id1,
+                 const std::string &n2, const std::string &ln2, const int &id2, RelationType relation);
 
-    void addPerson(const Person &newPerson);
+    bool HashedGenealogyGraph::isAncestor(const std::string &person1, const std::string &person2);
 
-    bool isAncestor(const Person &person1, const Person &person2);
+    bool isAncestor(const std::string &n1, const std::string &ln1, const int &id1,
+                    const std::string &n2, const std::string &ln2, const int &id2);
 
-    bool isDistantRelative(const Person& person1, const Person& person2);
+    bool isDistantRelative(const std::string &n1, const std::string &ln1, const int &id1,
+                           const std::string &n2, const std::string &ln2, const int &id2);
 
-    bool isSibling(const Person &person1, const Person &person2);
+    bool isSibling(const std::string &n1, const std::string &ln1, const int &id1,
+                   const std::string &n2, const std::string &ln2, const int &id2);
 
-    void findAllAncestors(const Person &person1, std::set<std::string>& ancestors1);
+    void findAllAncestors(const std::string &person1, std::set<std::string> &ancestors1);
 
-    std::string findCommonAncestor(const Person &person1, const Person &person2);
+    std::string HashedGenealogyGraph::findCommonAncestor(const std::string &person1, const std::string &person2);
 
-    int findFurthestDescendant(const Person &person);
+    std::string findCommonAncestor(const std::string &n1, const std::string &ln1, const int &id1,
+                                   const std::string &n2, const std::string &ln2, const int &id2);
 
-    
+    int findFurthestDescendant(const std::string &n1, const std::string &ln1, const int &id1);
+
+    int findFurthestDescendant(const std::string &person);
+
+    void saveToFile(const std::string &filename) const;
+
+    void loadFromFile(const std::string &filename);
 };
 
-#endif

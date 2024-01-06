@@ -1,17 +1,21 @@
 #include "HashedGenealogyGraph.h"
-#include <algorithm>
 
 
-Person::Person(const std::string &n, const std::string &ln, int i)
+HashedGenealogyGraph::HashedGenealogyGraph(const bool autoSave) : auto_save(autoSave)
 {
-    std::string input = n + ln + std::to_string(i);
-    hashValue = SHA256::getHashString(input);
+    if (auto_save)
+        loadFromFile("genealogy_save.txt");
 }
 
-HashedGenealogyGraph::HashedGenealogyGraph(const bool autoSave) : auto_save(autoSave) {}
-
-void HashedGenealogyGraph::addEdge(const Person &source, const Person &destination, RelationType relation)
+void HashedGenealogyGraph::addEdge(const std::string &n1, const std::string &ln1, const int &id1,
+                                   const std::string &n2, const std::string &ln2, const int &id2, RelationType relation)
 {
+    std::string input1 = n1 + ln1 + std::to_string(id1);
+    std::string input2 = n2 + ln2 + std::to_string(id2);
+
+    std::string source = SHA256::getHashString(input1);
+    std::string destination = SHA256::getHashString(input2);
+
     adjacencyList[source].emplace_back(destination, relation);
 
     if (relation == Married)
@@ -20,38 +24,115 @@ void HashedGenealogyGraph::addEdge(const Person &source, const Person &destinati
         adjacencyList[destination].emplace_back(source, Parent);
     else
         adjacencyList[destination].emplace_back(source, Child);
-}
 
-void HashedGenealogyGraph::addPerson(const Person &newPerson)
-{
-    if (adjacencyList.find(newPerson) == adjacencyList.end())
+    if (auto_save)
     {
-        adjacencyList[newPerson] = std::vector<std::pair<Person, RelationType>>();
-        nodeMap[newPerson.hashValue] = newPerson;
+        saveToFile("genealogy_save.txt");
     }
 }
 
-bool HashedGenealogyGraph::isAncestor(const Person &person1, const Person &person2)
+void HashedGenealogyGraph::saveToFile(const std::string &filename) const
 {
+    std::ofstream outFile(filename);
+
+    if (outFile.is_open())
+    {
+        for (const auto &entry : adjacencyList)
+        {
+            std::string source = entry.first;
+            for (const auto &pair : entry.second)
+            {
+                std::string destination = pair.first;
+                RelationType relation = pair.second;
+
+                outFile << source << " " << destination << " " << static_cast<int>(relation) << std::endl;
+            }
+        }
+        outFile.close();
+    }
+    else
+    {
+        std::cerr << "Unable to open file for saving: " << filename << std::endl;
+    }
+}
+
+void HashedGenealogyGraph::loadFromFile(const std::string &filename)
+{
+    std::ifstream inFile(filename);
+
+    if (inFile.is_open())
+    {
+        adjacencyList.clear(); // Clear existing data before loading
+
+        std::string source, destination;
+        int relationInt;
+
+        while (inFile >> source >> destination >> relationInt)
+        {
+            RelationType relation = static_cast<RelationType>(relationInt);
+            adjacencyList[source].emplace_back(destination, relation);
+
+            if (relation == Married)
+            {
+                adjacencyList[destination].emplace_back(source, relation);
+            }
+            else if (relation == Child)
+            {
+                adjacencyList[destination].emplace_back(source, Parent);
+            }
+            else
+            {
+                adjacencyList[destination].emplace_back(source, Child);
+            }
+        }
+
+        inFile.close();
+    }
+    else
+    {
+        std::cerr << "Save file not found. Creating a new one: " << filename << std::endl;
+        saveToFile(filename); // Create a new save file
+    }
+}
+bool HashedGenealogyGraph::isAncestor(const std::string &person1, const std::string &person2)
+{
+
     for (const auto &pair : adjacencyList[person2])
     {
-        if (pair.second == Parent && pair.first.hashValue == person1.hashValue)
+        if (pair.second == Parent && pair.first == person1)
             return true;
-        else if(pair.second == Parent)
+        else if (pair.second == Parent)
             return isAncestor(person1, pair.first);
     }
     return false;
 }
-
-bool HashedGenealogyGraph::isSibling(const Person &person1, const Person &person2)
+bool HashedGenealogyGraph::isAncestor(const std::string &n1, const std::string &ln1, const int &id1,
+                                      const std::string &n2, const std::string &ln2, const int &id2)
 {
+    std::string input1 = n1 + ln1 + std::to_string(id1);
+    std::string input2 = n2 + ln2 + std::to_string(id2);
+
+    std::string person1 = SHA256::SHA256::getHashString(input1);
+    std::string person2 = SHA256::getHashString(input2);
+
+    return isAncestor(person1, person2);
+}
+bool HashedGenealogyGraph::isSibling(const std::string &n1, const std::string &ln1, const int &id1,
+                                     const std::string &n2, const std::string &ln2, const int &id2)
+{
+    std::string input1 = n1 + ln1 + std::to_string(id1);
+    std::string input2 = n2 + ln2 + std::to_string(id2);
+
+    std::string person1 = SHA256::getHashString(input1);
+    std::string person2 = SHA256::getHashString(input2);
+
     for (const auto &pair : adjacencyList[person1])
     {
         if (pair.second == Parent)
         {
             for (const auto &sibling : adjacencyList[pair.first])
             {
-                if (sibling.first.hashValue == person2.hashValue && sibling.second == Parent)
+                if (sibling.first == person2 && sibling.second == Parent)
                 {
                     return true;
                 }
@@ -61,27 +142,34 @@ bool HashedGenealogyGraph::isSibling(const Person &person1, const Person &person
     return false;
 }
 
-bool HashedGenealogyGraph::isDistantRelative(const Person& person1, const Person& person2) {
+bool HashedGenealogyGraph::isDistantRelative(const std::string &n1, const std::string &ln1, const int &id1,
+                                             const std::string &n2, const std::string &ln2, const int &id2)
+{
+    std::string input1 = n1 + ln1 + std::to_string(id1);
+    std::string input2 = n2 + ln2 + std::to_string(id2);
 
-    if(!isAncestor(person1, person2) && !isAncestor(person2, person1) && findCommonAncestor(person1,person2) !="")
+    std::string person1 = SHA256::getHashString(input1);
+    std::string person2 = SHA256::getHashString(input2);
+
+    if (!isAncestor(person1, person2) && !isAncestor(person2, person1) && findCommonAncestor(person1, person2) != "")
         return true;
 
     return false;
-
 }
-void HashedGenealogyGraph::findAllAncestors(const Person &person1, std::set<std::string>& ancestors1)
+void HashedGenealogyGraph::findAllAncestors(const std::string &person1, std::set<std::string> &ancestors1)
 {
     for (const auto &pair : adjacencyList[person1])
     {
         if (pair.second == Parent)
         {
-            ancestors1.insert(pair.first.hashValue);
+            ancestors1.insert(pair.first);
             findAllAncestors(pair.first, ancestors1);
         }
     }
 }
-std::string HashedGenealogyGraph::findCommonAncestor(const Person &person1, const Person &person2)
+std::string HashedGenealogyGraph::findCommonAncestor(const std::string &person1, const std::string &person2)
 {
+
     std::set<std::string> ancestors1;
 
     std::set<std::string> ancestors2;
@@ -101,7 +189,28 @@ std::string HashedGenealogyGraph::findCommonAncestor(const Person &person1, cons
     return ""; // No common ancestor found
 }
 
-int HashedGenealogyGraph::findFurthestDescendant(const Person &person)
+std::string HashedGenealogyGraph::findCommonAncestor(const std::string &n1, const std::string &ln1, const int &id1,
+                                                     const std::string &n2, const std::string &ln2, const int &id2)
+{
+
+     std::string input1 = n1 + ln1 + std::to_string(id1);
+    std::string input2 = n2 + ln2 + std::to_string(id2);
+
+    std::string person1 = SHA256::getHashString(input1);
+    std::string person2 = SHA256::getHashString(input2);
+
+    return findCommonAncestor(person1, person2);
+}
+int HashedGenealogyGraph::findFurthestDescendant(const std::string &n1, const std::string &ln1, const int &id1)
+{
+    std::string input1 = n1 + ln1 + std::to_string(id1);
+    std::string person = SHA256::getHashString(input1);
+
+
+    return findFurthestDescendant(person);
+}
+
+int HashedGenealogyGraph::findFurthestDescendant(const std::string &person)
 {
     int maxDistance = 0;
 
