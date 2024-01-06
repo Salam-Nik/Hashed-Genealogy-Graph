@@ -7,9 +7,14 @@ namespace py = pybind11;
 void init_your_project_name(pybind11::module& m) {
     py::class_<HashedGenealogyGraph>(m, "HashedGenealogyGraph")
         .def(py::init<bool>())
-        .def("addEdge", &HashedGenealogyGraph::addEdge)
-        .def("isAncestor", &HashedGenealogyGraph::isAncestor)
-        .def("findCommonAncestor", &HashedGenealogyGraph::findCommonAncestor);
+        .def("addEdge", static_cast<void (HashedGenealogyGraph::*)(const std::string&, const std::string&, const int&,
+                                                                    const std::string&, const std::string&, const int&, RelationType)>(&HashedGenealogyGraph::addEdge))
+        .def("isAncestor", py::overload_cast<const std::string&, const std::string&>(&HashedGenealogyGraph::isAncestor))
+        .def("isAncestor", py::overload_cast<const std::string&, const std::string&, const int&,
+                                             const std::string&, const std::string&, const int&>(&HashedGenealogyGraph::isAncestor))
+        .def("findCommonAncestor", py::overload_cast<const std::string&, const std::string&>(&HashedGenealogyGraph::findCommonAncestor))
+        .def("findCommonAncestor", py::overload_cast<const std::string&, const std::string&, const int&,
+                                                    const std::string&, const std::string&, const int&>(&HashedGenealogyGraph::findCommonAncestor));
 }
 
 // The following macro creates the entry point for the Python module
