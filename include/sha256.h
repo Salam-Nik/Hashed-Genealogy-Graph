@@ -18,7 +18,8 @@ extern const uint K[64];
 extern uint W[64];
 extern uint a, b, c, d, e, f, g, h, T1, T2;
 
-vector<uchar> str_to_hex(const string &input);
+string str_to_hex(const string &input);
+vector<uchar> readInput(const string &input);
 const int calPadding(ll size);
 vector<uchar> padMessage(vector<uchar> bytes);
 vector<vector<uint>> parseMessage(vector<uchar> bytes);

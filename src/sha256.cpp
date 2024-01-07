@@ -1,4 +1,4 @@
-#include "sha256.h"
+#include "/home/salam/Documents/ds/Hashed-Genealogy-Graph/include/sha256.h"
 
 const uint K[] = {0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
                  0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
@@ -13,7 +13,18 @@ uint W[64];
 
 uint a, b, c, d, e, f, g, h, T1, T2;
 
-vector<uchar> str_to_hex(const string &input)
+string str_to_hex(const string &input)
+{
+    std::ostringstream hexStream;
+
+    for (unsigned char ch : input)
+    {
+        hexStream << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(ch);
+    }
+
+    return hexStream.str();
+}
+vector<uchar> readInput(const string &input)
 {
     vector<uchar> v;
     int size = input.length();
@@ -176,7 +187,7 @@ vector<vector<uint>> calHash(const vector<vector<uint>> M)
 string getHashString(const string &input)
 {
 
-    vector<uchar> message = str_to_hex(input);
+    vector<uchar> message = readInput(str_to_hex(input));
 
     message = padMessage(message);
 
