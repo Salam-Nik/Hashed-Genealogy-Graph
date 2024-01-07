@@ -18,7 +18,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/SHA256)
 include_directories(${pybind11_INCLUDE_DIRS})
 
 # Add the libraries
-add_library(HashedGenealogyGraph STATIC HashedGenealogyGraph/HashedGenealogyGraph.cpp)
+add_library(HashedGenealogyGraph SHARED HashedGenealogyGraph/HashedGenealogyGraph.cpp)
+
 add_library(SHA256 STATIC SHA256/SHA256.cpp)
 
 # Link pybind11 to the target containing Python bindings

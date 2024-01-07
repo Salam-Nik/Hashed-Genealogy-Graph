@@ -1,25 +1,32 @@
-
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h> 
 #include "HashedGenealogyGraph.h"
 
 namespace py = pybind11;
 
-void init_your_project_name(pybind11::module& m) {
+
+void init_genealogy_graph(pybind11::module& m) {
     py::class_<HashedGenealogyGraph>(m, "HashedGenealogyGraph")
         .def(py::init<bool>())
-        .def("addEdge", static_cast<void (HashedGenealogyGraph::*)(const std::string&, const std::string&, const int&,
-                                                                    const std::string&, const std::string&, const int&, RelationType)>(&HashedGenealogyGraph::addEdge))
+        .def("addEdge", &HashedGenealogyGraph::addEdge)
         .def("isAncestor", py::overload_cast<const std::string&, const std::string&>(&HashedGenealogyGraph::isAncestor))
         .def("isAncestor", py::overload_cast<const std::string&, const std::string&, const int&,
                                              const std::string&, const std::string&, const int&>(&HashedGenealogyGraph::isAncestor))
         .def("findCommonAncestor", py::overload_cast<const std::string&, const std::string&>(&HashedGenealogyGraph::findCommonAncestor))
         .def("findCommonAncestor", py::overload_cast<const std::string&, const std::string&, const int&,
-                                                    const std::string&, const std::string&, const int&>(&HashedGenealogyGraph::findCommonAncestor));
+                                                   const std::string&, const std::string&, const int&>(&HashedGenealogyGraph::findCommonAncestor))
+        .def("isSibling", py::overload_cast<const std::string&, const std::string&, const int&,
+                                            const std::string&, const std::string&, const int&>(&HashedGenealogyGraph::isSibling))
+        .def("isDistantRelative", py::overload_cast<const std::string&, const std::string&, const int&,
+                                                  const std::string&, const std::string&, const int&>(&HashedGenealogyGraph::isDistantRelative))
+        .def("findAllAncestors", &HashedGenealogyGraph::findAllAncestors)
+        .def("findFurthestDescendant", py::overload_cast<const std::string&, const std::string&, const int&>(&HashedGenealogyGraph::findFurthestDescendant))
+        .def("findFurthestDescendant", py::overload_cast<const std::string&>(&HashedGenealogyGraph::findFurthestDescendant));
 }
 
-// The following macro creates the entry point for the Python module
-PYBIND11_MODULE(your_project_name, m) {
-    init_your_project_name(m);
+
+PYBIND11_MODULE(HashedGenealogyGraph, m) {
+    init_genealogy_graph(m);
 }
 
 HashedGenealogyGraph::HashedGenealogyGraph(const bool autoSave) : auto_save(autoSave)
@@ -112,7 +119,7 @@ void HashedGenealogyGraph::loadFromFile(const std::string &filename)
     else
     {
         std::cerr << "Save file not found. Creating a new one: " << filename << std::endl;
-        saveToFile(filename); // Create a new save file
+        saveToFile(filename); 
     }
 }
 bool HashedGenealogyGraph::isAncestor(const std::string &person1, const std::string &person2)
@@ -207,7 +214,7 @@ std::string HashedGenealogyGraph::findCommonAncestor(const std::string &person1,
         }
     }
 
-    return ""; // No common ancestor found
+    return "";
 }
 
 std::string HashedGenealogyGraph::findCommonAncestor(const std::string &n1, const std::string &ln1, const int &id1,
