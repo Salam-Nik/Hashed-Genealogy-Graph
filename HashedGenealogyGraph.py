@@ -13,14 +13,14 @@ class HGG:
         self.lib.createHashedGenealogyGraph.argtypes = [c_bool]
         self.lib.createHashedGenealogyGraph.restype = c_void_p
         self.lib.addEdge.argtypes = [c_void_p, c_char_p, c_char_p, c_int, c_char_p, c_char_p, c_int, c_int]
-        self.lib.isAncestor.argtypes = [c_void_p, c_char_p, c_char_p]
+        self.lib.isAncestor.argtypes = [c_void_p, c_char_p, c_char_p, c_int, c_char_p, c_char_p, c_int]
         self.lib.isAncestor.restype = c_int
         self.lib.isSibling.argtypes = [c_void_p, c_char_p, c_char_p, c_int, c_char_p, c_char_p, c_int]
         self.lib.isSibling.restype = c_int
         self.lib.isDistantRelative.argtypes = [c_void_p, c_char_p, c_char_p, c_int, c_char_p, c_char_p, c_int]
         self.lib.isDistantRelative.restype = c_int
-        self.lib.findAllAncestors.argtypes = [c_void_p, c_char_p, POINTER(c_char), c_int]
-        self.lib.findCommonAncestor.argtypes = [c_void_p, c_char_p, c_char_p, POINTER(c_char), c_int]
+        self.lib.findCommonAncestor.argtypes = [c_void_p, c_char_p, c_char_p, c_int, c_char_p, c_char_p, c_int]
+        self.lib.findCommonAncestor.restype = c_char_p
         self.lib.findFurthestDescendant.argtypes = [c_void_p, c_char_p, c_char_p, c_int]
         self.lib.findFurthestDescendant.restype = c_int
     
@@ -32,8 +32,10 @@ class HGG:
         return self.lib.addEdge(obj, self.create_char_p(n1), self.create_char_p(ln1)
                                 , id1, self.create_char_p(n2), self.create_char_p(ln2), id2, relation)
 
-    def isAncestor(self, obj, person1, person2):
-        return bool(self.lib.isAncestor(obj, person1, person2))
+    def isAncestor(self, obj, n1, ln1, id1, n2, ln2, id2):
+        return bool(self.lib.isAncestor(obj, self.create_char_p(n1), self.create_char_p(ln1)
+                                , id1, self.create_char_p(n2), self.create_char_p(ln2), id2))
+
 
     def isSibling(self, obj, n1, ln1, id1, n2, ln2, id2):
         return bool(self.lib.isSibling(obj, self.create_char_p(n1), self.create_char_p(ln1), id1,
@@ -43,17 +45,10 @@ class HGG:
         return bool(self.lib.isDistantRelative(obj, self.create_char_p(n1), self.create_char_p(ln1)
                                 , id1, self.create_char_p(n2), self.create_char_p(ln2), id2))
 
-    def findAllAncestors(self, obj, person):
-        buffer_size = 1024 
-        result_buffer = (c_char * buffer_size)()
-        self.lib.findAllAncestors(obj, person, result_buffer, buffer_size)
-        return result_buffer.value.decode()
-
-    def findCommonAncestor(self, obj, person1, person2):
-        buffer_size = 1024  
-        result_buffer = (c_char * buffer_size)()
-        self.lib.findCommonAncestor(obj, person1, person2, result_buffer, buffer_size)
-        return result_buffer.value.decode()
+    def findCommonAncestor(self, obj, n1, ln1, id1, n2, ln2, id2):
+        res = self.lib.findCommonAncestor(obj, self.create_char_p(n1), self.create_char_p(ln1), id1,
+                                        self.create_char_p(n2), self.create_char_p(ln2), id2)
+        return res.decode('utf-8')
 
     def findFurthestDescendant(self, obj, n1, ln1, id1):
         return self.lib.findFurthestDescendant(obj, self.create_char_p(n1), self.create_char_p(ln1), id1)

@@ -9,7 +9,6 @@ HashedGenealogyGraph* createHashedGenealogyGraph(const bool autoSave)
     return new HashedGenealogyGraph(autoSave);
 }
 
-// Add an edge to the graph
 void addEdge(HashedGenealogyGraph* obj, const char* n1, const char* ln1, const int id1,
              const char* n2, const char* ln2, const int id2, RelationType relation)
 {
@@ -26,44 +25,34 @@ int isAncestor(HashedGenealogyGraph* obj, const char* person1, const char* perso
     return obj->isAncestor(person1, person2) ? 1 : 0;
 }
 
-// Check if two people are siblings
 int isSibling(HashedGenealogyGraph* obj, const char* n1, const char* ln1, const int id1,
               const char* n2, const char* ln2, const int id2)
 {
     return obj->isSibling(n1, ln1, id1, n2, ln2, id2) ? 1 : 0;
 }
 
-// Check if a person is a distant relative
 int isDistantRelative(HashedGenealogyGraph* obj, const char* n1, const char* ln1, const int id1,
                       const char* n2, const char* ln2, const int id2)
 {
     return obj->isDistantRelative(n1, ln1, id1, n2, ln2, id2) ? 1 : 0;
 }
 
-// Find all ancestors of a person
-void findAllAncestors(HashedGenealogyGraph* obj, const char* person, char* resultBuffer, int bufferSize)
+const char* findCommonAncestor(HashedGenealogyGraph* obj, const char* n1, const char* ln1, const int id1,
+                               const char* n2, const char* ln2, const int id2)
 {
-    std::set<std::string> ancestors;
-    obj->findAllAncestors(person, ancestors);
+    string name1(n1);
+    string lastName1(ln1);
+    string name2(n2);
+    string lastName2(ln2);
+    
+    std::string commonAncestor = obj->findCommonAncestor(name1, lastName1, id1, name2, lastName2, id2);
 
-    std::string result;
-    for (const auto& ancestor : ancestors)
-    {
-        result += ancestor + "\n";
-    }
+    char* res = new char[commonAncestor.length() + 1];
 
-    std::strncpy(resultBuffer, result.c_str(), bufferSize);
+    strcpy(res, commonAncestor.c_str());
+
+    return res;
 }
-
-
-void findCommonAncestor(HashedGenealogyGraph* obj, const char* person1, const char* person2, char* resultBuffer, int bufferSize)
-{
-    std::string commonAncestor = obj->findCommonAncestor(person1, person2);
-
-   
-    std::strncpy(resultBuffer, commonAncestor.c_str(), bufferSize);
-}
-
 
 int findFurthestDescendant(HashedGenealogyGraph* obj, const char* n1, const char* ln1, const int id1)
 {
@@ -269,7 +258,7 @@ string HashedGenealogyGraph::findCommonAncestor(const string &n1, const string &
                                                      const string &n2, const string &ln2, const int &id2)
 {
 
-     string input1 = n1 + ln1 + to_string(id1);
+    string input1 = n1 + ln1 + to_string(id1);
     string input2 = n2 + ln2 + to_string(id2);
 
     string person1 = SHA256::getHashString(input1);
