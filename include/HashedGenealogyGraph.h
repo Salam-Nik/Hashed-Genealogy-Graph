@@ -19,19 +19,30 @@ enum RelationType
     Parent
 };
 
+struct tuple_str_int
+{
+    const char* first;
+    const char* second;
+    int third;
+};
 class HashedGenealogyGraph
 {
 
 private:
+    struct Relations
+    {
+        map<string, set<string>> married;
+        vector<string> parent;
+        bool visited;
+    };
     bool auto_save;
-    map<string, vector<pair<string, RelationType>>> adjacencyList;
-    map<string, string> nodeMap;
+    map<string, Relations> adjacencyList;
 
 public:
     HashedGenealogyGraph(const bool autoSave = true);
 
-    void addEdge(const string &n1, const string &ln1, const int &id1,
-                 const string &n2, const string &ln2, const int &id2, RelationType relation);
+    void addEdge(const string &n1, const string &ln1, const int &id1,const string &n2, const string &ln2, const int &id2,
+                 vector<tuple<string,string, int>> children);
 
     bool isAncestor(const string &person1, const string &person2);
 
@@ -55,7 +66,7 @@ public:
 
     int findFurthestDescendant(const string &person);
 
-    void saveToFile(const string &filename) const;
+    void saveToFile(const string &filename);
 
     void loadFromFile(const string &filename);
 };

@@ -3,4 +3,6 @@ sudo apt install python3-venv
 python3 -m venv env
 source env/bin/activate
 pip3 install cython
+chmod +x build.sh
+./build.sh
 ```
