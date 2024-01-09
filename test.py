@@ -4,12 +4,12 @@ hgg = HGG()
 
 graph = hgg.createHashedGenealogyGraph(auto_save=True)
 
-children_data = [
-    ("Bob", "Johnson", 4),
-    ("Eve", "Taylor", 5)
-]
+# children_data = [
+#     ("Bob", "Johnson", 4),
+#     ("Eve", "Taylor", 5)
+# ]
 
-hgg.addEdge(graph, "John", "Doe", 1, "Jane", "Doe", 2, children_data)
+# hgg.addEdge(graph, "John", "Doe", 1, "Jane", "Doe", 2, children_data)
 
 result_ancestor = hgg.isAncestor(graph, "John", "Doe", 1, "Jane", "Doe", 2)
 result_sibling = hgg.isSibling(graph, "Eve", "Taylor", 5, "Bob", "Johnson", 4)

@@ -89,7 +89,7 @@ extern "C"
     HashedGenealogyGraph::HashedGenealogyGraph(const bool autoSave) : auto_save(autoSave)
     {
         if (auto_save)
-            loadFromFile("genealogy_save.txt");
+            loadFromFile("genealogy_save.json");
     }
 
     void HashedGenealogyGraph::addEdge(const string &n1, const string &ln1, const int &id1,
@@ -113,64 +113,53 @@ extern "C"
         }
         if (auto_save)
         {
-            saveToFile("genealogy_save.txt");
+            saveToFile("genealogy_save.json");
         }
     }
 
-    void HashedGenealogyGraph::saveToFile(const string &filename)
+void HashedGenealogyGraph::loadFromFile(const std::string &filename)
+{
+    std::ifstream inFile(filename, std::ios::in | std::ios::binary);
+    if (!inFile.is_open())
     {
-        ofstream outFile(filename);
-
-        if (outFile.is_open())
-        {
-
-            for (auto &entry : adjacencyList)
-            {
-                string parent1HashVal = entry.first;
-                entry.second.visited = true;
-
-                for (const auto &family : entry.second.married)
-                {
-                    string parent2HashVal = family.first;
-                    if (entry.second.visited || adjacencyList[parent2HashVal].visited)
-                    {
-                        adjacencyList[parent2HashVal].visited = true;
-                        outFile << parent1HashVal << " " << parent2HashVal;
-
-                        for (const auto &childHashVal : family.second)
-                        {
-                            outFile << " " << childHashVal;
-                        }
-
-                        outFile << endl;
-                    }
-                }
-            }
-            outFile.close();
-        }
-        else
-        {
-            cerr << "File not found: " << filename << ". Creating a new file." << endl;
-
-            ofstream outFile(filename);
-            outFile.close();
-        }
+        std::cerr << "Error: File not found - " << filename << std::endl;
+        return;
     }
 
-    void HashedGenealogyGraph::loadFromFile(const string &filename)
+    adjacencyList.clear();
+
+    // Read the entire file into a string
+    std::stringstream buffer;
+    buffer << inFile.rdbuf();
+    std::string jsonString = buffer.str();
+
+    // Parse the UTF-8 encoded JSON string
+    rapidjson::Document document;
+    document.Parse(jsonString.c_str());
+
+    if (document.HasParseError())
     {
-        ifstream inFile(filename);
+        std::cerr << "Error parsing JSON: " << rapidjson::GetParseErrorFunc(document.GetParseError())(document.GetParseError()) << " (Code " << document.GetParseError() << ")" << std::endl;
+        return;
+    }
 
-        if (inFile.is_open())
+    const auto &families = document["families"];
+    for (const auto &family : families.GetArray())
+    {
+        std::string parent1HashVal = family["parent1HashVal"].GetString();
+        std::string parent2HashVal = family["parent2HashVal"].GetString();
+
+        // Ensure entries exist in the married map
+        adjacencyList[parent1HashVal].married[parent2HashVal];
+        adjacencyList[parent2HashVal].married[parent1HashVal];
+
+        const auto &children = family["children"];
+        for (const auto &child : children.GetArray())
         {
-            adjacencyList.clear();
-
-            string parent1HashVal, parent2HashVal, childHashVal;
-
-            while (inFile >> parent1HashVal >> parent2HashVal)
+            if (child.IsString()) // Check if it's a valid string
             {
-
-                while (inFile >> childHashVal)
+                std::string childHashVal = child.GetString();
+                if (!childHashVal.empty())
                 {
                     adjacencyList[parent1HashVal].married[parent2HashVal].insert(childHashVal);
                     adjacencyList[parent2HashVal].married[parent1HashVal].insert(childHashVal);
@@ -178,14 +167,61 @@ extern "C"
                     adjacencyList[childHashVal].parent.emplace_back(parent2HashVal);
                 }
             }
-
-            inFile.close();
-        }
-        else
-        {
-            cerr << "File not found: " << filename << endl;
         }
     }
+}
+
+
+void HashedGenealogyGraph::saveToFile(const std::string &filename)
+{
+    rapidjson::Document document;
+    document.SetObject();
+
+    auto &allocator = document.GetAllocator();
+    rapidjson::Value families(rapidjson::kArrayType);
+
+    for (const auto &entry : adjacencyList)
+    {
+        std::string parent1HashVal = entry.first;
+
+        for (const auto &family : entry.second.married)
+        {
+            std::string parent2HashVal = family.first;
+
+            rapidjson::Value familyData(rapidjson::kObjectType);
+            familyData.AddMember("parent1HashVal", rapidjson::Value(parent1HashVal.c_str(), allocator).Move(), allocator);
+            familyData.AddMember("parent2HashVal", rapidjson::Value(parent2HashVal.c_str(), allocator).Move(), allocator);
+
+            rapidjson::Value children(rapidjson::kArrayType);
+            for (const auto &childHashVal : family.second)
+            {
+                children.PushBack(rapidjson::Value(childHashVal.c_str(), allocator).Move(), allocator);
+            }
+
+            familyData.AddMember("children", children, allocator);
+            families.PushBack(familyData, allocator);
+        }
+    }
+
+    document.AddMember("families", families, allocator);
+
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    document.Accept(writer);
+
+    // Save the string to the file
+    std::ofstream outFile(filename, std::ios::out | std::ios::binary);
+    if (outFile.is_open())
+    {
+        outFile << buffer.GetString() << std::endl;
+        outFile.close();
+    }
+    else
+    {
+        std::cerr << "Error: Unable to open file for writing - " << filename << std::endl;
+    }
+}
+
 
     bool HashedGenealogyGraph::isAncestor(const string &person1, const string &person2)
     {

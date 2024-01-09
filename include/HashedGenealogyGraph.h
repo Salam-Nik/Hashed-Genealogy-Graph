@@ -5,6 +5,9 @@
 #include "sha256.h" 
 #include <algorithm>
 #include <cstring>
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
 
 #ifdef __cplusplus
 extern "C" {

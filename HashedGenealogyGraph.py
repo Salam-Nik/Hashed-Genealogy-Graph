@@ -10,7 +10,9 @@ class TupleStrInt(Structure):
 
 class HGG:
 
-    def __init__(self, library_path="build/libHashedGenealogyGraph.so"):
+    LIBRARY_PATH = "build/libHashedGenealogyGraph.so"
+
+    def __init__(self, library_path=LIBRARY_PATH):
         self.lib = CDLL(library_path)
         self.RelationType = RelationType 
         self.setup_function_signatures()
