@@ -113,7 +113,7 @@ extern "C"
         }
         if (auto_save)
         {
-            saveToFile("genealogy1_save.txt");
+            saveToFile("genealogy_save.txt");
         }
     }
 
@@ -145,12 +145,15 @@ extern "C"
                         outFile << endl;
                     }
                 }
-                outFile.close();
             }
+            outFile.close();
         }
         else
         {
-            cerr << "Unable to open file for saving: " << filename << endl;
+            cerr << "File not found: " << filename << ". Creating a new file." << endl;
+
+            ofstream outFile(filename);
+            outFile.close();
         }
     }
 
@@ -216,10 +219,10 @@ extern "C"
         string person1 = SHA256::getHashString(input1);
         string person2 = SHA256::getHashString(input2);
 
-        for (const auto &parent : adjacencyList[person1].parent)
+        for (const auto &p : adjacencyList[person1].parent)
         {
-            auto it = find(adjacencyList[person1].parent.begin(), adjacencyList[person1].parent.end(), Parent);
-            if (it != adjacencyList[person1].parent.end())
+            auto it = find(adjacencyList[person2].parent.begin(), adjacencyList[person2].parent.end(), p);
+            if (it != adjacencyList[person2].parent.end())
                 return true;
         }
         return false;
