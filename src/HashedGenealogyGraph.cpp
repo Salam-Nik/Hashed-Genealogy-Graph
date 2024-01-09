@@ -99,17 +99,20 @@ extern "C"
         string input1 = n1 + ln1 + to_string(id1);
         string input2 = n2 + ln2 + to_string(id2);
 
-        string source = SHA256::getHashString(input1);
-        string destination = SHA256::getHashString(input2);
+        string p1 = SHA256::getHashString(input1);
+        string p2 = SHA256::getHashString(input2);
 
         for (const auto &child : children)
         {
             string hashStr = get<0>(child) + get<1>(child) + to_string(get<2>(child));
             string childHash = SHA256::getHashString(hashStr);
-            !source.empty() && adjacencyList[source].married[destination].insert(childHash).second;
-            !destination.empty() && adjacencyList[destination].married[source].insert(childHash).second;
-            !source.empty() ? adjacencyList[childHash].parent.emplace_back(source), void() : void();
-            !destination.empty() ? adjacencyList[childHash].parent.emplace_back(destination), void() : void();
+            if (adjacencyList[childHash].parent.empty())
+            {
+                !p1.empty() && adjacencyList[p1].married[p2].insert(childHash).second;
+                !p2.empty() && adjacencyList[p2].married[p1].insert(childHash).second;
+                adjacencyList[childHash].parent.emplace_back(p1);
+                adjacencyList[childHash].parent.emplace_back(p2);
+            }
         }
         if (auto_save)
         {
@@ -117,134 +120,134 @@ extern "C"
         }
     }
 
-void HashedGenealogyGraph::loadFromFile(const std::string &filename)
-{
-    std::ifstream inFile(filename, std::ios::in | std::ios::binary);
-    if (!inFile.is_open())
+    void HashedGenealogyGraph::loadFromFile(const std::string &filename)
     {
-        std::cerr << "Error: File not found - " << filename << std::endl;
-        return;
-    }
-
-    adjacencyList.clear();
-
-    // Read the entire file into a string
-    std::stringstream buffer;
-    buffer << inFile.rdbuf();
-    std::string jsonString = buffer.str();
-
-    // Parse the UTF-8 encoded JSON string
-    rapidjson::Document document;
-    document.Parse(jsonString.c_str());
-
-    if (document.HasParseError())
-    {
-        std::cerr << "Error parsing JSON: " << rapidjson::GetParseErrorFunc(document.GetParseError())(document.GetParseError()) << " (Code " << document.GetParseError() << ")" << std::endl;
-        return;
-    }
-
-    const auto &families = document["families"];
-    for (const auto &family : families.GetArray())
-    {
-        std::string parent1HashVal = family["parent1HashVal"].GetString();
-        std::string parent2HashVal = family["parent2HashVal"].GetString();
-
-        // Ensure entries exist in the married map
-        adjacencyList[parent1HashVal].married[parent2HashVal];
-        adjacencyList[parent2HashVal].married[parent1HashVal];
-
-        const auto &children = family["children"];
-        for (const auto &child : children.GetArray())
+        std::ifstream inFile(filename, std::ios::in | std::ios::binary);
+        if (!inFile.is_open())
         {
-            if (child.IsString()) // Check if it's a valid string
+            std::cerr << "Error: File not found - " << filename << std::endl;
+            return;
+        }
+
+        adjacencyList.clear();
+
+        string line;
+        while (std::getline(inFile, line))
+        {
+
+            rapidjson::Document document;
+            document.Parse(line.c_str());
+
+            if (document.HasParseError())
             {
-                std::string childHashVal = child.GetString();
-                if (!childHashVal.empty())
+                std::cerr << "Error parsing JSON: " << rapidjson::GetParseErrorFunc(document.GetParseError())(document.GetParseError()) << " (Code " << document.GetParseError() << ")" << std::endl;
+                return;
+            }
+
+            const auto &families = document["families"];
+            for (const auto &family : families.GetArray())
+            {
+                std::string parent1HashVal = family["parent1HashVal"].GetString();
+                std::string parent2HashVal = family["parent2HashVal"].GetString();
+
+                // Ensure entries exist in the married map
+                adjacencyList[parent1HashVal].married[parent2HashVal];
+                adjacencyList[parent2HashVal].married[parent1HashVal];
+
+                const auto &children = family["children"];
+                for (const auto &child : children.GetArray())
                 {
-                    adjacencyList[parent1HashVal].married[parent2HashVal].insert(childHashVal);
-                    adjacencyList[parent2HashVal].married[parent1HashVal].insert(childHashVal);
-                    adjacencyList[childHashVal].parent.emplace_back(parent1HashVal);
-                    adjacencyList[childHashVal].parent.emplace_back(parent2HashVal);
+                    if (child.IsString()) // Check if it's a valid string
+                    {
+                        std::string childHashVal = child.GetString();
+                        if (!childHashVal.empty())
+                        {
+                            if (adjacencyList[childHashVal].parent.empty())
+                            {
+                                adjacencyList[parent1HashVal].married[parent2HashVal].insert(childHashVal);
+                                adjacencyList[parent2HashVal].married[parent1HashVal].insert(childHashVal);
+                                adjacencyList[childHashVal].parent.emplace_back(parent1HashVal);
+                                adjacencyList[childHashVal].parent.emplace_back(parent2HashVal);
+                            }
+                        }
+                    }
                 }
             }
         }
     }
-}
 
-
-void HashedGenealogyGraph::saveToFile(const std::string &filename)
-{
-    rapidjson::Document document;
-    document.SetObject();
-
-    auto &allocator = document.GetAllocator();
-    rapidjson::Value families(rapidjson::kArrayType);
-
-    for (const auto &entry : adjacencyList)
+    void HashedGenealogyGraph::saveToFile(const std::string &filename)
     {
-        std::string parent1HashVal = entry.first;
+        rapidjson::Document document;
+        document.SetObject();
 
-        for (const auto &family : entry.second.married)
+        auto &allocator = document.GetAllocator();
+        rapidjson::Value families(rapidjson::kArrayType);
+
+        for (const auto &entry : adjacencyList)
         {
-            std::string parent2HashVal = family.first;
+            std::string parent1HashVal = entry.first;
 
-            rapidjson::Value familyData(rapidjson::kObjectType);
-            familyData.AddMember("parent1HashVal", rapidjson::Value(parent1HashVal.c_str(), allocator).Move(), allocator);
-            familyData.AddMember("parent2HashVal", rapidjson::Value(parent2HashVal.c_str(), allocator).Move(), allocator);
-
-            rapidjson::Value children(rapidjson::kArrayType);
-            for (const auto &childHashVal : family.second)
+            for (const auto &family : entry.second.married)
             {
-                children.PushBack(rapidjson::Value(childHashVal.c_str(), allocator).Move(), allocator);
-            }
+                std::string parent2HashVal = family.first;
 
-            familyData.AddMember("children", children, allocator);
-            families.PushBack(familyData, allocator);
+                rapidjson::Value familyData(rapidjson::kObjectType);
+                familyData.AddMember("parent1HashVal", rapidjson::Value(parent1HashVal.c_str(), allocator).Move(), allocator);
+                familyData.AddMember("parent2HashVal", rapidjson::Value(parent2HashVal.c_str(), allocator).Move(), allocator);
+
+                rapidjson::Value children(rapidjson::kArrayType);
+                for (const auto &childHashVal : family.second)
+                {
+                    children.PushBack(rapidjson::Value(childHashVal.c_str(), allocator).Move(), allocator);
+                }
+
+                familyData.AddMember("children", children, allocator);
+                families.PushBack(familyData, allocator);
+            }
+        }
+
+        document.AddMember("families", families, allocator);
+
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        document.Accept(writer);
+
+        // Save the string to the file with each item in a new line
+        std::ofstream outFile(filename, std::ios::out | std::ios::binary);
+        if (outFile.is_open())
+        {
+            outFile << buffer.GetString() << std::endl;
+            outFile.close();
+        }
+        else
+        {
+            std::cerr << "Error: Unable to open file for writing - " << filename << std::endl;
         }
     }
 
-    document.AddMember("families", families, allocator);
-
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    document.Accept(writer);
-
-    // Save the string to the file
-    std::ofstream outFile(filename, std::ios::out | std::ios::binary);
-    if (outFile.is_open())
+    bool HashedGenealogyGraph::isAncestor(const string &ancestor, const string &person)
     {
-        outFile << buffer.GetString() << std::endl;
-        outFile.close();
-    }
-    else
-    {
-        std::cerr << "Error: Unable to open file for writing - " << filename << std::endl;
-    }
-}
-
-
-    bool HashedGenealogyGraph::isAncestor(const string &person1, const string &person2)
-    {
-
-        for (const auto &parent : adjacencyList[person2].parent)
+        for (const auto &p : adjacencyList[person].parent)
         {
-            if (parent == person1)
+            if (p == ancestor || isAncestor(ancestor, p))
+            {
                 return true;
-            else
-                return isAncestor(person1, parent);
+            }
         }
         return false;
     }
+
     bool HashedGenealogyGraph::isAncestor(const string &n1, const string &ln1, const int &id1,
                                           const string &n2, const string &ln2, const int &id2)
     {
         string input1 = n1 + ln1 + to_string(id1);
         string input2 = n2 + ln2 + to_string(id2);
 
-        string person1 = SHA256::getHashString(input1);
-        string person2 = SHA256::getHashString(input2);
+        string Ancestor = SHA256::getHashString(input1);
+        string person = SHA256::getHashString(input2);
 
-        return isAncestor(person1, person2);
+        return isAncestor(Ancestor, person);
     }
     bool HashedGenealogyGraph::isSibling(const string &n1, const string &ln1, const int &id1,
                                          const string &n2, const string &ln2, const int &id2)
@@ -278,13 +281,12 @@ void HashedGenealogyGraph::saveToFile(const std::string &filename)
 
         return false;
     }
-    void HashedGenealogyGraph::findAllAncestors(const string &person1, set<string> &ancestors1)
+    void HashedGenealogyGraph::findAllAncestors(const string &person1, set<string> &ancestors)
     {
-        for (const auto &Parent : adjacencyList[person1].parent)
+        for (const auto &p : adjacencyList[person1].parent)
         {
-
-            ancestors1.insert(Parent);
-            findAllAncestors(Parent, ancestors1);
+            ancestors.insert(p);
+            findAllAncestors(p, ancestors);
         }
     }
     string HashedGenealogyGraph::findCommonAncestor(const string &person1, const string &person2)
@@ -298,11 +300,14 @@ void HashedGenealogyGraph::saveToFile(const std::string &filename)
 
         findAllAncestors(person2, ancestors2);
 
-        for (const auto &pair : ancestors2)
+        for (auto it1 = ancestors1.rbegin(); it1 != ancestors1.rend(); ++it1)
         {
-            if (ancestors1.count(pair))
+            for (auto it2 = ancestors2.rbegin(); it2 != ancestors2.rend(); ++it2)
             {
-                return pair;
+                if (*it1 == *it2)
+                {
+                    return *it1;
+                }
             }
         }
 
