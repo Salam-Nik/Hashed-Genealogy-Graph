@@ -44,9 +44,9 @@ class HGG:
     def addEdge(self, obj, n1, ln1, id1, n2, ln2, id2, children):
         children_array = (TupleStrInt * len(children))(*[
             TupleStrInt(
-                self.create_char_p(child[0]),  # n1
-                self.create_char_p(child[1]),  # ln1
-                child[2]  # id
+                self.create_char_p(child[0]), 
+                self.create_char_p(child[1]), 
+                child[2] 
             ) for child in children
         ])
         
