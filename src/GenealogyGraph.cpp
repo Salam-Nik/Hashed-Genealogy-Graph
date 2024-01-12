@@ -105,30 +105,35 @@ GenealogyGraph::GenealogyGraph(const bool autoSave) : auto_save(autoSave), adjac
         loadFromFile("genealogy_save.json");
 }
 
-void GenealogyGraph::addEdge(const std::string &n1, const std::string &ln1, const int &id1,
-                             const std::string &n2, const std::string &ln2, const int &id2,
-                             std::vector<std::tuple<std::string, std::string, int>> children)
+void GenealogyGraph::addEdge(const string &n1, const string &ln1, const int &id1,
+                             const string &n2, const string &ln2, const int &id2,
+                             vector<tuple<string, string, int>> children)
 {
-    std::string input1 = n1 + ln1 + std::to_string(id1);
-    std::string input2 = n2 + ln2 + std::to_string(id2);
+    string input1 = n1 + ln1 + to_string(id1);
+    string input2 = n2 + ln2 + to_string(id2);
 
-    std::string p1 = SHA256::getHashString(input1);
-    std::string p2 = SHA256::getHashString(input2);
+    string p1 = SHA256::getHashString(input1);
+    string p2 = SHA256::getHashString(input2);
 
-    for (auto &child : children)
+    for (auto &childVec : children)
     {
-        std::string hashStr = std::get<0>(child) + std::get<1>(child) + std::to_string(std::get<2>(child));
-        std::string childHash = SHA256::getHashString(hashStr);
-        auto &tempRelations = adjacencyList[childHash];
+        string hashStr = get<0>(childVec) + get<1>(childVec) + to_string(get<2>(childVec));
+        string childHash = SHA256::getHashString(hashStr);
+        auto child = adjacencyList[childHash];
+        auto parent1 = adjacencyList[p1];
+        auto parent2 = adjacencyList[p2];
 
-        if (tempRelations.parent.empty())
+        if (child->parent.empty())
         {
             if (!p1.empty())
-                tempRelations.married[p2].insert(childHash);
+                parent2->married[parent1].insert(child);
             if (!p2.empty())
-                tempRelations.married[p1].insert(childHash);
-            tempRelations.parent.emplace_back(p1);
-            tempRelations.parent.emplace_back(p2);
+                parent1->married[parent2].insert(child);
+            child->parent.emplace_back(parent1);
+            child->parent.emplace_back(parent2);
+            child->hashValue = hashStr;
+            parent1->hashValue = p1;
+            parent1->hashValue = p2;
         }
     }
     if (auto_save)
@@ -137,19 +142,19 @@ void GenealogyGraph::addEdge(const std::string &n1, const std::string &ln1, cons
     }
 }
 
-void GenealogyGraph::loadFromFile(const std::string &filename)
+void GenealogyGraph::loadFromFile(const string &filename)
 {
-    std::ifstream inFile(filename, std::ios::in | std::ios::binary);
+    ifstream inFile(filename, ios::in | ios::binary);
     if (!inFile.is_open())
     {
-        std::cerr << "Error: File not found - " << filename << std::endl;
+        cerr << "Error: File not found - " << filename << endl;
         return;
     }
 
     // adjacencyList.clear();
 
-    std::string line;
-    while (std::getline(inFile, line))
+    string line;
+    while (getline(inFile, line))
     {
 
         rapidjson::Document document;
@@ -157,36 +162,36 @@ void GenealogyGraph::loadFromFile(const std::string &filename)
 
         if (document.HasParseError())
         {
-            std::cerr << "Error parsing JSON: " << rapidjson::GetParseErrorFunc(document.GetParseError())(document.GetParseError()) << " (Code " << document.GetParseError() << ")" << std::endl;
+            cerr << "Error parsing JSON: " << rapidjson::GetParseErrorFunc(document.GetParseError())(document.GetParseError()) << " (Code " << document.GetParseError() << ")" << endl;
             return;
         }
 
         const auto &families = document["families"];
         for (const auto &family : families.GetArray())
         {
-            std::string parent1HashVal = family["parent1HashVal"].GetString();
-            std::string parent2HashVal = family["parent2HashVal"].GetString();
+            string parent1HashVal = family["parent1HashVal"].GetString();
+            string parent2HashVal = family["parent2HashVal"].GetString();
 
-            auto &p1Relations = adjacencyList[parent1HashVal];
-            auto &p2Relations = adjacencyList[parent2HashVal];
-            p1Relations.married[parent2HashVal];
-            p2Relations.married[parent1HashVal];
+            auto p1Relations = adjacencyList[parent1HashVal];
+            auto p2Relations = adjacencyList[parent2HashVal];
+            p1Relations->married[p2Relations];
+            p2Relations->married[p1Relations];
 
             const auto &children = family["children"];
-            for (const auto &child : children.GetArray())
+            for (const auto &childHash : children.GetArray())
             {
-                if (child.IsString())
+                if (childHash.IsString())
                 {
-                    std::string childHashVal = child.GetString();
+                    string childHashVal = childHash.GetString();
                     if (!childHashVal.empty())
                     {
-                        auto &childRelations = adjacencyList[childHashVal];
-                        if (childRelations.parent.empty())
+                        auto child = adjacencyList[childHashVal];
+                        if (child->parent.empty())
                         {
-                            p1Relations.married[parent2HashVal].insert(childHashVal);
-                            p2Relations.married[parent1HashVal].insert(childHashVal);
-                            childRelations.parent.emplace_back(parent1HashVal);
-                            childRelations.parent.emplace_back(parent2HashVal);
+                            p1Relations->married[p2Relations].insert(child);
+                            p2Relations->married[p1Relations].insert(child);
+                            child->parent.emplace_back(p1Relations);
+                            child->parent.emplace_back(p2Relations);
                         }
                     }
                 }
@@ -195,7 +200,7 @@ void GenealogyGraph::loadFromFile(const std::string &filename)
     }
 }
 
-void GenealogyGraph::saveToFile(const std::string &filename)
+void GenealogyGraph::saveToFile(const string &filename)
     {
         rapidjson::Document document;
         document.SetObject();
@@ -203,22 +208,22 @@ void GenealogyGraph::saveToFile(const std::string &filename)
         auto &allocator = document.GetAllocator();
         rapidjson::Value families(rapidjson::kArrayType);
 
-        for (const auto &entry : adjacencyList.values())
+        for (const auto entry : adjacencyList.values())
         {
-            std::string parent1HashVal = adjacencyList.getKey(entry);
+            string parent1HashVal = entry->hashValue;
 
-            for (const auto &family : entry.married)
+            for (const auto &family : entry->married)
             {
-                std::string parent2HashVal = family.first;
+                string parent2HashVal = family.first->hashValue;
 
                 rapidjson::Value familyData(rapidjson::kObjectType);
                 familyData.AddMember("parent1HashVal", rapidjson::Value(parent1HashVal.c_str(), allocator).Move(), allocator);
                 familyData.AddMember("parent2HashVal", rapidjson::Value(parent2HashVal.c_str(), allocator).Move(), allocator);
 
                 rapidjson::Value children(rapidjson::kArrayType);
-                for (const auto &childHashVal : family.second)
+                for (const auto &child : family.second)
                 {
-                    children.PushBack(rapidjson::Value(childHashVal.c_str(), allocator).Move(), allocator);
+                    children.PushBack(rapidjson::Value(child->hashValue.c_str(), allocator).Move(), allocator);
                 }
 
                 familyData.AddMember("children", children, allocator);
@@ -233,21 +238,21 @@ void GenealogyGraph::saveToFile(const std::string &filename)
         document.Accept(writer);
 
 
-        std::ofstream outFile(filename, std::ios::out | std::ios::binary);
+        ofstream outFile(filename, ios::out | ios::binary);
         if (outFile.is_open())
         {
-            outFile << buffer.GetString() << std::endl;
+            outFile << buffer.GetString() << endl;
             outFile.close();
         }
         else
         {
-            std::cerr << "Error: Unable to open file for writing - " << filename << std::endl;
+            cerr << "Error: Unable to open file for writing - " << filename << endl;
         }
     }
 
-bool GenealogyGraph::isAncestor(const std::string &ancestor, const std::string &person)
+bool GenealogyGraph::isAncestor(const Person* ancestor, const Person* person)
 {
-    for (const auto &p : adjacencyList[person].parent)
+    for (const auto &p : person->parent)
     {
         if (p == ancestor || isAncestor(ancestor, p))
         {
@@ -257,64 +262,65 @@ bool GenealogyGraph::isAncestor(const std::string &ancestor, const std::string &
     return false;
 }
 
-bool GenealogyGraph::isAncestor(const std::string &n1, const std::string &ln1, const int &id1,
-                                const std::string &n2, const std::string &ln2, const int &id2)
+bool GenealogyGraph::isAncestor(const string &n1, const string &ln1, const int &id1,
+                                const string &n2, const string &ln2, const int &id2)
 {
-    std::string input1 = n1 + ln1 + std::to_string(id1);
-    std::string input2 = n2 + ln2 + std::to_string(id2);
+    string input1 = n1 + ln1 + to_string(id1);
+    string input2 = n2 + ln2 + to_string(id2);
 
-    std::string Ancestor = SHA256::getHashString(input1);
-    std::string person = SHA256::getHashString(input2);
+    string Ancestor = SHA256::getHashString(input1);
+    string person = SHA256::getHashString(input2);
 
-    return isAncestor(Ancestor, person);
+    return isAncestor(adjacencyList[Ancestor], adjacencyList[person]);
 }
 
-bool GenealogyGraph::isSibling(const std::string &n1, const std::string &ln1, const int &id1,
-                               const std::string &n2, const std::string &ln2, const int &id2)
+bool GenealogyGraph::isSibling(const string &n1, const string &ln1, const int &id1,
+                               const string &n2, const string &ln2, const int &id2)
 {
-    std::string input1 = n1 + ln1 + std::to_string(id1);
-    std::string input2 = n2 + ln2 + std::to_string(id2);
+    string input1 = n1 + ln1 + to_string(id1);
+    string input2 = n2 + ln2 + to_string(id2);
 
-    std::string person1 = SHA256::getHashString(input1);
-    std::string person2 = SHA256::getHashString(input2);
+    string person1 = SHA256::getHashString(input1);
+    string person2 = SHA256::getHashString(input2);
 
-    for (const auto &p : adjacencyList[person1].parent)
+    for (const auto &p : adjacencyList[person1]->parent)
     {
-        auto it = std::find(adjacencyList[person2].parent.begin(), adjacencyList[person2].parent.end(), p);
-        if (it != adjacencyList[person2].parent.end())
+        auto it = find(adjacencyList[person2]->parent.begin(), adjacencyList[person2]->parent.end(), p);
+        if (it != adjacencyList[person2]->parent.end())
             return true;
     }
     return false;
 }
 
-bool GenealogyGraph::isDistantRelative(const std::string &n1, const std::string &ln1, const int &id1,
-                                       const std::string &n2, const std::string &ln2, const int &id2)
+bool GenealogyGraph::isDistantRelative(const string &n1, const string &ln1, const int &id1,
+                                       const string &n2, const string &ln2, const int &id2)
 {
-    std::string input1 = n1 + ln1 + std::to_string(id1);
-    std::string input2 = n2 + ln2 + std::to_string(id2);
+    string input1 = n1 + ln1 + to_string(id1);
+    string input2 = n2 + ln2 + to_string(id2);
 
-    std::string person1 = SHA256::getHashString(input1);
-    std::string person2 = SHA256::getHashString(input2);
-
-    if (!isAncestor(person1, person2) && !isAncestor(person2, person1) && findCommonAncestor(person1, person2) != "")
+    string person1 = SHA256::getHashString(input1);
+    string person2 = SHA256::getHashString(input2);
+    auto p1 = adjacencyList[person1];
+    auto p2 = adjacencyList[person2];
+    if (!isAncestor(p1, p2) && !isAncestor(p2, p1) && findCommonAncestor(p1, p2) != "")
         return true;
 
     return false;
 }
 
-void GenealogyGraph::findAllAncestors(const std::string &person1, std::set<std::string> &ancestors)
+void GenealogyGraph::findAllAncestors(const Person* person1, set<Person*> &ancestors)
 {
-    for (const auto &p : adjacencyList[person1].parent)
+    for (const auto &p : person1->parent)
     {
         ancestors.insert(p);
         findAllAncestors(p, ancestors);
     }
 }
 
-std::string GenealogyGraph::findCommonAncestor(const std::string &person1, const std::string &person2)
+string GenealogyGraph::findCommonAncestor(const Person* person1, const Person* person2)
 {
-    std::set<std::string> ancestors1;
-    std::set<std::string> ancestors2;
+    set<Person*> ancestors1;
+    set<Person*> ancestors2;
 
     findAllAncestors(person1, ancestors1);
     findAllAncestors(person2, ancestors2);
@@ -323,46 +329,50 @@ std::string GenealogyGraph::findCommonAncestor(const std::string &person1, const
     {
         for (auto it2 = ancestors2.rbegin(); it2 != ancestors2.rend(); ++it2)
         {
-            if (*it1 == *it2)
-            {
-                return *it1;
-            }
+        if (*it1 == *it2)// Dereference the iterators to access Person objects
+        {
+            return (*it1)->hashValue;  // Dereference the iterator to access Person object's member
+        }
         }
     }
 
     return "";
 }
 
-std::string GenealogyGraph::findCommonAncestor(const std::string &n1, const std::string &ln1, const int &id1,
-                                               const std::string &n2, const std::string &ln2, const int &id2)
+string GenealogyGraph::findCommonAncestor(const string &n1, const string &ln1, const int &id1,
+                                               const string &n2, const string &ln2, const int &id2)
 {
-    std::string input1 = n1 + ln1 + std::to_string(id1);
-    std::string input2 = n2 + ln2 + std::to_string(id2);
+    string input1 = n1 + ln1 + to_string(id1);
+    string input2 = n2 + ln2 + to_string(id2);
 
-    std::string person1 = SHA256::getHashString(input1);
-    std::string person2 = SHA256::getHashString(input2);
+    string person1 = SHA256::getHashString(input1);
+    string person2 = SHA256::getHashString(input2);
 
-    return findCommonAncestor(person1, person2);
+    auto p1 = adjacencyList[person1];
+    auto p2 = adjacencyList[person2];
+
+    return findCommonAncestor(p1, p2);
 }
 
-int GenealogyGraph::findFurthestDescendant(const std::string &n1, const std::string &ln1, const int &id1)
+int GenealogyGraph::findFurthestDescendant(const string &n1, const string &ln1, const int &id1)
 {
-    std::string input1 = n1 + ln1 + std::to_string(id1);
-    std::string person = SHA256::getHashString(input1);
+    string input1 = n1 + ln1 + to_string(id1);
+    string person = SHA256::getHashString(input1);
 
-    return findFurthestDescendant(person);
+    auto p= adjacencyList[person];
+    return findFurthestDescendant(p);
 }
 
-int GenealogyGraph::findFurthestDescendant(const std::string &person)
+int GenealogyGraph::findFurthestDescendant(const Person* person)
 {
     int maxDistance = 0;
 
-    for (const auto &family : adjacencyList[person].married)
+    for (const auto &family : person->married)
     {
         for (const auto &Child : family.second)
         {
             int distance = findFurthestDescendant(Child) + 1;
-            maxDistance = std::max(maxDistance, distance);
+            maxDistance = max(maxDistance, distance);
         }
     }
     return maxDistance;

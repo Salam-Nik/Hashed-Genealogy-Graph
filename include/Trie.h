@@ -7,59 +7,64 @@
 #include <string>
 #include <vector>
 
-template <typename T>
-struct TrieNode {
-    std::unordered_map<char, TrieNode*> children;
-    T data;
+using namespace std;
 
-    TrieNode() : data() {}
+template <typename T>
+struct TrieNode
+{
+    unordered_map<char, TrieNode *> children;
+    T *data;
+
+    TrieNode() : data(nullptr) {}
 };
 
 template <typename T>
-class TrieIterator {
+class TrieIterator
+{
 private:
-    const TrieNode<T>* current;
+    const TrieNode<T> *current;
     bool is_end;
 
 public:
-    TrieIterator(const TrieNode<T>* node);
+    TrieIterator(const TrieNode<T> *node);
 
-    const T& operator*() const;
+    const T &operator*() const;
 
-    TrieIterator& operator++();
+    TrieIterator &operator++();
 
-    bool operator!=(const TrieIterator<T>& other) const;
+    bool operator!=(const TrieIterator<T> &other) const;
 
 private:
     void advance();
 };
 
 template <typename T>
-class Trie {
+class Trie
+{
 public:
-    TrieNode<T>* root;
+    TrieNode<T> *root;
 
     Trie();
 
     ~Trie();
-    
-    void insert(const std::string& key, const T& value);
-    void insert(const std::pair<std::string, T>& keyValuePair); // Overloaded insert
+
+    void insert(const string &key, const T &value);
+    void insert(const pair<string, T> &keyValuePair);
 
     TrieIterator<T> begin() const;
     TrieIterator<T> end() const;
 
-    T& operator[](const std::string& key);
-    TrieNode<T>* find(const std::string& key); // Renamed from search to be consistent
-    bool contains(const std::string& key) const;
-    
-    std::string getKey(const T& value) const;
-    std::vector<T> values() const;
+    T *operator[](const string &key);
+    TrieNode<T> *find(const string &key);
+    bool contains(const string &key) const;
+
+    string getKey(const T &value) const;
+    vector<T*> values();
 
 private:
-    void deleteSubtree(TrieNode<T>* node); // Helper function for destructor
-    std::string getKeyHelper(const TrieNode<T>* node, const T& value, const std::string& currentKey) const;
-    void getAllValuesHelper(const TrieNode<T>* node, const std::string& currentKey, std::vector<T>& result) const;
+    void deleteSubtree(TrieNode<T> *node);
+    void getAllValuesHelper(const TrieNode<T> *node, const string &currentKey, vector<T*> &result);
+
 };
 
 #endif // TRIE_H

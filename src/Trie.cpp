@@ -1,6 +1,7 @@
 // Trie.cpp
 
 #include "../include/Trie.h"
+#include "../include/GenealogyGraph.h"
 
 template <typename T>
 TrieIterator<T>::TrieIterator(const TrieNode<T>* node) : current(node), is_end(false) {
@@ -11,7 +12,7 @@ TrieIterator<T>::TrieIterator(const TrieNode<T>* node) : current(node), is_end(f
 
 template <typename T>
 const T& TrieIterator<T>::operator*() const {
-    return current->data;
+    return *(current->data);
 }
 
 template <typename T>
@@ -53,11 +54,12 @@ void Trie<T>::deleteSubtree(TrieNode<T>* node) {
         deleteSubtree(child);
     }
 
+    delete node->data; 
     delete node;
 }
 
 template <typename T>
-void Trie<T>::insert(const std::string& key, const T& value) {
+void Trie<T>::insert(const string& key, const T& value) {
     TrieNode<T>* node = root;
 
     for (char ch : key) {
@@ -67,11 +69,11 @@ void Trie<T>::insert(const std::string& key, const T& value) {
         node = node->children[ch];
     }
 
-    node->data = value;
+    node->data = new T(value); 
 }
 
 template <typename T>
-void Trie<T>::insert(const std::pair<std::string, T>& keyValuePair) {
+void Trie<T>::insert(const pair<string, T>& keyValuePair) {
     insert(keyValuePair.first, keyValuePair.second);
 }
 
@@ -86,7 +88,7 @@ TrieIterator<T> Trie<T>::end() const {
 }
 
 template <typename T>
-TrieNode<T>* Trie<T>::find(const std::string& key) {
+TrieNode<T>* Trie<T>::find(const string& key) {
     TrieNode<T>* node = root;
 
     for (char ch : key) {
@@ -101,7 +103,7 @@ TrieNode<T>* Trie<T>::find(const std::string& key) {
 }
 
 template <typename T>
-T& Trie<T>::operator[](const std::string& key) {
+T* Trie<T>::operator[](const string& key) {
     TrieNode<T>* node = root;
 
     for (char ch : key) {
@@ -111,11 +113,15 @@ T& Trie<T>::operator[](const std::string& key) {
         node = node->children[ch];
     }
 
+    if (node->data == nullptr) {
+        node->data = new T();  
+    }
+
     return node->data;
 }
 
 template <typename T>
-bool Trie<T>::contains(const std::string& key) const {
+bool Trie<T>::contains(const string& key) const {
     TrieNode<T>* node = root;
 
     for (char ch : key) {
@@ -130,34 +136,9 @@ bool Trie<T>::contains(const std::string& key) const {
 }
 
 template <typename T>
-std::string Trie<T>::getKey(const T& value) const {
-    return getKeyHelper(root, value, "");
-}
-
-template <typename T>
-std::string Trie<T>::getKeyHelper(const TrieNode<T>* node, const T& value, const std::string& currentKey) const {
-    if (node == nullptr) {
-        return "";
-    }
-
-    if (node->data == value) {
-        return currentKey;
-    }
-
-    for (const auto& [ch, child] : node->children) {
-        std::string result = getKeyHelper(child, value, currentKey + ch);
-        if (!result.empty()) {
-            return result;
-        }
-    }
-
-    return "";
-}
-
-template <typename T>
-std::vector<T> Trie<T>::values() const {
-    std::vector<T> result;
-    std::string currentKey;
+vector<T*> Trie<T>::values() {
+    vector<T*> result;
+    string currentKey;
 
     getAllValuesHelper(root, currentKey, result);
 
@@ -165,12 +146,12 @@ std::vector<T> Trie<T>::values() const {
 }
 
 template <typename T>
-void Trie<T>::getAllValuesHelper(const TrieNode<T>* node, const std::string& currentKey, std::vector<T>& result) const {
+void Trie<T>::getAllValuesHelper(const TrieNode<T>* node, const string& currentKey, vector<T*>& result) {
     if (node == nullptr) {
         return;
     }
 
-    if (!currentKey.empty()) {
+    if (node->data != nullptr) {
         result.push_back(node->data);
     }
 
@@ -178,3 +159,5 @@ void Trie<T>::getAllValuesHelper(const TrieNode<T>* node, const std::string& cur
         getAllValuesHelper(child, currentKey + ch, result);
     }
 }
+
+template class Trie<GenealogyGraph::Person>;

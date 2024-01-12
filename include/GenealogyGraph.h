@@ -16,6 +16,7 @@
 #include "Trie.h"
 #include "sha256.h"
 
+using namespace std;
 struct tuple_str_int
 {
     const char *first;
@@ -26,48 +27,50 @@ struct tuple_str_int
 class GenealogyGraph
 {
 private:
-    struct Relations
-    {
-        std::unordered_map<std::string, std::set<std::string>> married;
-        std::vector<std::string> parent;
+    struct Person
+    {   
+        string hashValue;
+        unordered_map<Person*, set<Person*>> married;
+        vector<Person*> parent;
+
         bool visited;
     };
     bool auto_save;
-    Trie<Relations> adjacencyList;
+    Trie<Person> adjacencyList;
 
 public:
     GenealogyGraph(const bool autoSave = true);
 
-    void insert(const std::string &key, const Relations &value);
+    void insert(const string &key, const Person &value);
 
-    void addEdge(const std::string &n1, const std::string &ln1, const int &id1, const std::string &n2, const std::string &ln2, const int &id2,
-                 std::vector<std::tuple<std::string, std::string, int>> children);
+    void addEdge(const string &n1, const string &ln1, const int &id1, const string &n2, const string &ln2, const int &id2,
+                 vector<tuple<string, string, int>> children);
 
-    bool isAncestor(const std::string &person1, const std::string &person2);
+    bool isAncestor(const Person* ancestor, const Person* person);
 
-    bool isAncestor(const std::string &n1, const std::string &ln1, const int &id1,
-                    const std::string &n2, const std::string &ln2, const int &id2);
+    bool isAncestor(const string &n1, const string &ln1, const int &id1,
+                    const string &n2, const string &ln2, const int &id2);
 
-    bool isDistantRelative(const std::string &n1, const std::string &ln1, const int &id1,
-                           const std::string &n2, const std::string &ln2, const int &id2);
+    bool isDistantRelative(const string &n1, const string &ln1, const int &id1,
+                           const string &n2, const string &ln2, const int &id2);
 
-    bool isSibling(const std::string &n1, const std::string &ln1, const int &id1,
-                   const std::string &n2, const std::string &ln2, const int &id2);
+    bool isSibling(const string &n1, const string &ln1, const int &id1,
+                   const string &n2, const string &ln2, const int &id2);
 
-    void findAllAncestors(const std::string &person1, std::set<std::string> &ancestors1);
+    void findAllAncestors(const Person* person1, set<Person*> &ancestors);
 
-    std::string findCommonAncestor(const std::string &person1, const std::string &person2);
+    string findCommonAncestor(const Person* person1, const Person* person2);
 
-    std::string findCommonAncestor(const std::string &n1, const std::string &ln1, const int &id1,
-                                   const std::string &n2, const std::string &ln2, const int &id2);
+    string findCommonAncestor(const string &n1, const string &ln1, const int &id1,
+                                   const string &n2, const string &ln2, const int &id2);
 
-    int findFurthestDescendant(const std::string &n1, const std::string &ln1, const int &id1);
+    int findFurthestDescendant(const string &n1, const string &ln1, const int &id1);
 
-    int findFurthestDescendant(const std::string &person);
+    int findFurthestDescendant(const Person* person);
 
-    void saveToFile(const std::string &filename);
+    void saveToFile(const string &filename);
 
-    void loadFromFile(const std::string &filename);
+    void loadFromFile(const string &filename);
 };
 
 #endif // HASHEDGENEALOGYGRAPH_H

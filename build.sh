@@ -8,4 +8,5 @@ g++ -c -fPIC src/GenealogyGraph.cpp -o build/GenealogyGraph.o
 
 g++ -shared -o build/GenealogyGraph.so build/GenealogyGraph.o build/Trie.o build/sha256.o
 
+
 echo "Compilation completed successfully."
