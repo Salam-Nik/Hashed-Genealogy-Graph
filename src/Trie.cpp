@@ -59,7 +59,7 @@ void Trie<T>::deleteSubtree(TrieNode<T>* node) {
 }
 
 template <typename T>
-void Trie<T>::insert(const string& key, const T& value) {
+void Trie<T>::insert(string& key, T* value) {
     TrieNode<T>* node = root;
 
     for (char ch : key) {
@@ -69,11 +69,11 @@ void Trie<T>::insert(const string& key, const T& value) {
         node = node->children[ch];
     }
 
-    node->data = new T(value); 
+    node->data = value; 
 }
 
 template <typename T>
-void Trie<T>::insert(const pair<string, T>& keyValuePair) {
+void Trie<T>::insert(pair<string, T*>& keyValuePair) {
     insert(keyValuePair.first, keyValuePair.second);
 }
 
@@ -104,6 +104,7 @@ TrieNode<T>* Trie<T>::find(const string& key) {
 
 template <typename T>
 T* Trie<T>::operator[](const string& key) {
+
     TrieNode<T>* node = root;
 
     for (char ch : key) {
@@ -113,9 +114,10 @@ T* Trie<T>::operator[](const string& key) {
         node = node->children[ch];
     }
 
-    if (node->data == nullptr) {
-        node->data = new T();  
-    }
+    if (node->data == nullptr) 
+        node->data = new T;  
+    
+
 
     return node->data;
 }
@@ -136,8 +138,24 @@ bool Trie<T>::contains(const string& key) const {
 }
 
 template <typename T>
-vector<T*> Trie<T>::values() {
-    vector<T*> result;
+void Trie<T>::getAllValuesHelper(const TrieNode<T>* root, string& currentKey, vector<pair<string, T*>>& result)
+{
+    if (root->data != nullptr) 
+    {
+        result.emplace_back(make_pair(currentKey, root->data));
+    }
+
+    for (const auto& [childChar, childNode] : root->children) 
+    {
+        currentKey.push_back(childChar);
+        getAllValuesHelper(childNode, currentKey, result);
+        currentKey.pop_back();
+    }
+}
+
+template <typename T>
+vector<pair<string, T*>> Trie<T>::values() {
+    vector<pair<string, T*>> result;
     string currentKey;
 
     getAllValuesHelper(root, currentKey, result);
@@ -145,19 +163,6 @@ vector<T*> Trie<T>::values() {
     return result;
 }
 
-template <typename T>
-void Trie<T>::getAllValuesHelper(const TrieNode<T>* node, const string& currentKey, vector<T*>& result) {
-    if (node == nullptr) {
-        return;
-    }
 
-    if (node->data != nullptr) {
-        result.push_back(node->data);
-    }
-
-    for (const auto& [ch, child] : node->children) {
-        getAllValuesHelper(child, currentKey + ch, result);
-    }
-}
-
+ 
 template class Trie<GenealogyGraph::Person>;

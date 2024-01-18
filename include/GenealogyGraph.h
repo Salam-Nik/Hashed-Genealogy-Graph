@@ -10,6 +10,7 @@
 #include <cstring>
 #include <unordered_map>
 #include <memory>
+#include <queue>
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
@@ -28,49 +29,60 @@ class GenealogyGraph
 {
 private:
     struct Person
-    {   
+    {
         string hashValue;
-        unordered_map<Person*, set<Person*>> married;
-        vector<Person*> parent;
+        unordered_map<Person *, set<Person *>> married;
+        vector<Person *> parent;
 
         bool visited;
+
+        int id;
+
+        char state = 'w';
     };
     bool auto_save;
-    Trie<Person> adjacencyList;
+    Trie<Person> adjacencyList = Trie<Person>();
+
+    vector<Person *> allPeople;
+
+    bool isAncestor(Person const *ancestor, Person const *person);
+
+    void findAllAncestors(Person const *person1, set<Person *> &ancestors);
+
+    string findCommonAncestor(Person *person1, Person *person2);
+
+    int findFurthestDescendant(Person const *person);
+
+    void saveToFile(string const &filename);
+
+    void loadFromFile(string const &filename);
+
+    pair<Person *, int> dfs(Person *current);
+
+    void addFamily(rapidjson::Value const &marriageItem);
 
 public:
-    GenealogyGraph(const bool autoSave = true);
+    GenealogyGraph(bool const autoSave = true);
 
-    void insert(const string &key, const Person &value);
+    void insert(string const &key, Person const &value);
 
-    void addEdge(const string &n1, const string &ln1, const int &id1, const string &n2, const string &ln2, const int &id2,
-                 vector<tuple<string, string, int>> children);
+    void addEdge(char const *json_data);
 
-    bool isAncestor(const Person* ancestor, const Person* person);
+    bool isAncestor(string const &ancestor, string const &person2);
 
-    bool isAncestor(const string &n1, const string &ln1, const int &id1,
-                    const string &n2, const string &ln2, const int &id2);
+    bool isDistantRelative(string const &person1, string const &person2);
 
-    bool isDistantRelative(const string &n1, const string &ln1, const int &id1,
-                           const string &n2, const string &ln2, const int &id2);
+    bool isSibling(string const &person1, string const &person2);
 
-    bool isSibling(const string &n1, const string &ln1, const int &id1,
-                   const string &n2, const string &ln2, const int &id2);
+    string findCommonAncestor(string const &person1, string const &person2);
 
-    void findAllAncestors(const Person* person1, set<Person*> &ancestors);
+    int findFurthestDescendant(string const &person);
 
-    string findCommonAncestor(const Person* person1, const Person* person2);
+    Person *findAllAncestorsBFS(Person *person);
 
-    string findCommonAncestor(const string &n1, const string &ln1, const int &id1,
-                                   const string &n2, const string &ln2, const int &id2);
+    // pair<Person *, Person *> findMostDistantRelationship();
 
-    int findFurthestDescendant(const string &n1, const string &ln1, const int &id1);
-
-    int findFurthestDescendant(const Person* person);
-
-    void saveToFile(const string &filename);
-
-    void loadFromFile(const string &filename);
+    pair<string, string> findMostDistantRelationship();
 };
 
 #endif // HASHEDGENEALOGYGRAPH_H

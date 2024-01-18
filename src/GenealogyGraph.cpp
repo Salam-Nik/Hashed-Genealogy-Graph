@@ -1,93 +1,78 @@
 #include "../include/GenealogyGraph.h"
 
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-    // Helper function to convert C-style strings to C++ std::string
-    std::string cStringToString(const char *cStr)
+    // Helper function to convert C-style strings to C++ string
+    string cStringToString(char const *cStr)
     {
-        return (cStr != nullptr) ? std::string(cStr) : std::string();
+        return (cStr != nullptr) ? string(cStr) : string();
     }
 
-    std::unique_ptr<GenealogyGraph> createHashedGenealogyGraph(const bool autoSave)
+    pair<char *, char *> findMostDistantRelationship(GenealogyGraph *obj)
     {
-        return std::make_unique<GenealogyGraph>(autoSave);
+        auto vec = obj->findMostDistantRelationship();
+        char *res1 = new char[vec.first.length() + 1];
+
+        char *res2 = new char[vec.second.length() + 1];
+        strcpy(res2, vec.second.c_str());
+
+        return pair<char *, char *>(res1, res2);
+    }
+    GenealogyGraph *createHashedGenealogyGraph(const bool autoSave)
+    {
+        return new GenealogyGraph(autoSave);
     }
 
-    void addEdge(GenealogyGraph *obj, const char *n1, const char *ln1, const int id1,
-                 const char *n2, const char *ln2, const int id2, const tuple_str_int *children, size_t children_size)
+    void addEdge(GenealogyGraph *obj, const char *json_data)
     {
-        std::string name1 = cStringToString(n1);
-        std::string lastName1 = cStringToString(ln1);
-        std::string name2 = cStringToString(n2);
-        std::string lastName2 = cStringToString(ln2);
-
-        std::vector<std::tuple<std::string, std::string, int>> children_vector;
-        for (size_t i = 0; i < children_size; ++i)
-        {
-            children_vector.emplace_back(cStringToString(children[i].first), cStringToString(children[i].second), children[i].third);
-        }
-
-        obj->addEdge(name1, lastName1, id1, name2, lastName2, id2, children_vector);
+        obj->addEdge(json_data);
     }
 
-    int isAncestor(GenealogyGraph *obj, const char *n1, const char *ln1, const int id1,
-                   const char *n2, const char *ln2, const int id2)
+    int isAncestor(GenealogyGraph *obj, int const id1, int const id2)
     {
-        std::string name1 = cStringToString(n1);
-        std::string lastName1 = cStringToString(ln1);
-        std::string name2 = cStringToString(n2);
-        std::string lastName2 = cStringToString(ln2);
+        string hashedId1 = SHA256::getHashString(to_string(id1));
+        string hashedId2 = SHA256::getHashString(to_string(id2));
 
-        return obj->isAncestor(name1, lastName1, id1, name2, lastName2, id2) ? 1 : 0;
+        return obj->isAncestor(hashedId1, hashedId2) ? 1 : 0;
     }
 
-    int isSibling(GenealogyGraph *obj, const char *n1, const char *ln1, const int id1,
-                  const char *n2, const char *ln2, const int id2)
+    int isSibling(GenealogyGraph *obj, int const id1, int const id2)
     {
-        std::string name1 = cStringToString(n1);
-        std::string lastName1 = cStringToString(ln1);
-        std::string name2 = cStringToString(n2);
-        std::string lastName2 = cStringToString(ln2);
+        string hashedId1 = SHA256::getHashString(to_string(id1));
+        string hashedId2 = SHA256::getHashString(to_string(id2));
 
-        return obj->isSibling(name1, lastName1, id1, name2, lastName2, id2) ? 1 : 0;
+        return obj->isSibling(hashedId1, hashedId2) ? 1 : 0;
     }
 
-    int isDistantRelative(GenealogyGraph *obj, const char *n1, const char *ln1, const int id1,
-                          const char *n2, const char *ln2, const int id2)
+    int isDistantRelative(GenealogyGraph *obj, int const id1, int const id2)
     {
-        std::string name1 = cStringToString(n1);
-        std::string lastName1 = cStringToString(ln1);
-        std::string name2 = cStringToString(n2);
-        std::string lastName2 = cStringToString(ln2);
+        string hashedId1 = SHA256::getHashString(to_string(id1));
+        string hashedId2 = SHA256::getHashString(to_string(id2));
 
-        return obj->isDistantRelative(name1, lastName1, id1, name2, lastName2, id2) ? 1 : 0;
+        return obj->isDistantRelative(hashedId1, hashedId2) ? 1 : 0;
     }
 
-    const char *findCommonAncestor(GenealogyGraph *obj, const char *n1, const char *ln1, const int id1,
-                                   const char *n2, const char *ln2, const int id2)
+    const char *findCommonAncestor(GenealogyGraph *obj, int const id1, int const id2)
     {
-        std::string name1 = cStringToString(n1);
-        std::string lastName1 = cStringToString(ln1);
-        std::string name2 = cStringToString(n2);
-        std::string lastName2 = cStringToString(ln2);
+        string hashedId1 = SHA256::getHashString(to_string(id1));
+        string hashedId2 = SHA256::getHashString(to_string(id2));
 
-        std::string commonAncestor = obj->findCommonAncestor(name1, lastName1, id1, name2, lastName2, id2);
+        string commonAncestor = obj->findCommonAncestor(hashedId1, hashedId2);
 
         char *res = new char[commonAncestor.length() + 1];
-        std::strcpy(res, commonAncestor.c_str());
+        strcpy(res, commonAncestor.c_str());
 
         return res;
     }
 
-    int findFurthestDescendant(GenealogyGraph *obj, const char *n1, const char *ln1, const int id1)
+    int findFurthestDescendant(GenealogyGraph *obj, int const id1)
     {
-        std::string name1 = cStringToString(n1);
-        std::string lastName1 = cStringToString(ln1);
-        return obj->findFurthestDescendant(name1, lastName1, id1);
+        string hashedId1 = SHA256::getHashString(to_string(id1));
+
+        return obj->findFurthestDescendant(hashedId1);
     }
 
     void deleteHashedGenealogyGraph(GenealogyGraph *obj)
@@ -99,41 +84,98 @@ extern "C"
 }
 #endif
 
-GenealogyGraph::GenealogyGraph(const bool autoSave) : auto_save(autoSave), adjacencyList()
+GenealogyGraph::GenealogyGraph(bool const autoSave) : auto_save(autoSave)
 {
+
+    allPeople.clear();
     if (auto_save)
         loadFromFile("genealogy_save.json");
 }
 
-void GenealogyGraph::addEdge(const string &n1, const string &ln1, const int &id1,
-                             const string &n2, const string &ln2, const int &id2,
-                             vector<tuple<string, string, int>> children)
+void GenealogyGraph::addFamily(rapidjson::Value const &marriageItem)
 {
-    string input1 = n1 + ln1 + to_string(id1);
-    string input2 = n2 + ln2 + to_string(id2);
-
-    string p1 = SHA256::getHashString(input1);
-    string p2 = SHA256::getHashString(input2);
-
-    for (auto &childVec : children)
+    try
     {
-        string hashStr = get<0>(childVec) + get<1>(childVec) + to_string(get<2>(childVec));
-        string childHash = SHA256::getHashString(hashStr);
-        auto child = adjacencyList[childHash];
-        auto parent1 = adjacencyList[p1];
-        auto parent2 = adjacencyList[p2];
+        string input1 = to_string(marriageItem["spouse1"]["id"].GetInt());
+        string input2 = to_string(marriageItem["spouse2"]["id"].GetInt());
+        string p1 = SHA256::getHashString(input1);
+        string p2 = SHA256::getHashString(input2);
 
-        if (child->parent.empty())
+        const rapidjson::Value &children = marriageItem["children"];
+        int n;
+        !allPeople.empty() ? n = allPeople.size() : n = 0;
+        if (children.IsArray())
         {
-            if (!p1.empty())
-                parent2->married[parent1].insert(child);
-            if (!p2.empty())
-                parent1->married[parent2].insert(child);
-            child->parent.emplace_back(parent1);
-            child->parent.emplace_back(parent2);
-            child->hashValue = hashStr;
-            parent1->hashValue = p1;
-            parent1->hashValue = p2;
+
+            for (rapidjson::SizeType i = 0; i < children.Size(); ++i)
+            {
+                const rapidjson::Value &childItems = children[i];
+
+                string hashStr = to_string(childItems["id"].GetInt());
+
+                string childHash = SHA256::getHashString(hashStr);
+
+                auto child = adjacencyList[childHash];
+
+                auto parent1 = adjacencyList[p1];
+
+                auto parent2 = adjacencyList[p2];
+
+                allPeople.push_back(parent1);
+
+                parent1->id = n++;
+                allPeople.push_back(parent2);
+
+                parent2->id = n++;
+                allPeople.push_back(child);
+                child->id = n;
+                if (child->parent.empty())
+                {
+                    if (!p1.empty())
+                        parent2->married[parent1].insert(child);
+                    if (!p2.empty())
+                        parent1->married[parent2].insert(child);
+                    child->parent.emplace_back(parent1);
+                    child->parent.emplace_back(parent2);
+                    child->hashValue = childHash;
+                    parent1->hashValue = p1;
+                    parent2->hashValue = p2;
+                }
+            }
+        }
+        else
+            cerr << "no array " << endl;
+    }
+    catch (const std::exception &e)
+    {
+        cerr << "Error: " << e.what() << endl;
+    }
+
+    if (auto_save)
+    {
+        saveToFile("genealogy_save.json");
+    }
+}
+
+void GenealogyGraph::addEdge(char const *json_data)
+{
+    rapidjson::Document document;
+    document.Parse(json_data);
+    rapidjson::Value &data = document.GetObject();
+    if (!document.IsObject())
+    {
+        cerr << "Error parsing JSON data." << endl;
+        return;
+    }
+
+    const rapidjson::Value &marriagesArray = document["marriages"];
+
+    if (marriagesArray.IsArray())
+    {
+        for (rapidjson::SizeType i = 0; i < marriagesArray.Size(); ++i)
+        {
+            const rapidjson::Value &marriageItem = marriagesArray[i];
+            addFamily(marriageItem);
         }
     }
     if (auto_save)
@@ -142,7 +184,7 @@ void GenealogyGraph::addEdge(const string &n1, const string &ln1, const int &id1
     }
 }
 
-void GenealogyGraph::loadFromFile(const string &filename)
+void GenealogyGraph::loadFromFile(string const &filename)
 {
     ifstream inFile(filename, ios::in | ios::binary);
     if (!inFile.is_open())
@@ -150,9 +192,8 @@ void GenealogyGraph::loadFromFile(const string &filename)
         cerr << "Error: File not found - " << filename << endl;
         return;
     }
-
-    // adjacencyList.clear();
-
+    int n;
+    !allPeople.empty() ? n = allPeople.size() : n = 0;
     string line;
     while (getline(inFile, line))
     {
@@ -172,26 +213,37 @@ void GenealogyGraph::loadFromFile(const string &filename)
             string parent1HashVal = family["parent1HashVal"].GetString();
             string parent2HashVal = family["parent2HashVal"].GetString();
 
-            auto p1Relations = adjacencyList[parent1HashVal];
-            auto p2Relations = adjacencyList[parent2HashVal];
-            p1Relations->married[p2Relations];
-            p2Relations->married[p1Relations];
+            auto parent1 = adjacencyList[parent1HashVal];
+            auto parent2 = adjacencyList[parent2HashVal];
+            parent1->married[parent2];
+            parent2->married[parent1];
+
+            allPeople.push_back(parent1);
+
+            parent1->id = n++;
+            allPeople.push_back(parent2);
+
+            parent2->id = n++;
 
             const auto &children = family["children"];
+
             for (const auto &childHash : children.GetArray())
             {
                 if (childHash.IsString())
                 {
+
                     string childHashVal = childHash.GetString();
                     if (!childHashVal.empty())
                     {
                         auto child = adjacencyList[childHashVal];
+                        allPeople.push_back(child);
+                        child->id = n++;
                         if (child->parent.empty())
                         {
-                            p1Relations->married[p2Relations].insert(child);
-                            p2Relations->married[p1Relations].insert(child);
-                            child->parent.emplace_back(p1Relations);
-                            child->parent.emplace_back(p2Relations);
+                            parent1->married[parent2].insert(child);
+                            parent2->married[parent1].insert(child);
+                            child->parent.emplace_back(parent1);
+                            child->parent.emplace_back(parent2);
                         }
                     }
                 }
@@ -200,57 +252,56 @@ void GenealogyGraph::loadFromFile(const string &filename)
     }
 }
 
-void GenealogyGraph::saveToFile(const string &filename)
+void GenealogyGraph::saveToFile(string const &filename)
+{
+    rapidjson::Document document;
+    document.SetObject();
+
+    auto &allocator = document.GetAllocator();
+    rapidjson::Value families(rapidjson::kArrayType);
+
+    for (const auto entry : adjacencyList.values())
     {
-        rapidjson::Document document;
-        document.SetObject();
+        string parent1HashVal = entry.first;
 
-        auto &allocator = document.GetAllocator();
-        rapidjson::Value families(rapidjson::kArrayType);
-
-        for (const auto entry : adjacencyList.values())
+        for (const auto &family : entry.second->married)
         {
-            string parent1HashVal = entry->hashValue;
+            string parent2HashVal = family.first->hashValue;
 
-            for (const auto &family : entry->married)
+            rapidjson::Value familyData(rapidjson::kObjectType);
+            familyData.AddMember("parent1HashVal", rapidjson::Value(parent1HashVal.c_str(), allocator).Move(), allocator);
+            familyData.AddMember("parent2HashVal", rapidjson::Value(parent2HashVal.c_str(), allocator).Move(), allocator);
+
+            rapidjson::Value children(rapidjson::kArrayType);
+            for (const auto &child : family.second)
             {
-                string parent2HashVal = family.first->hashValue;
-
-                rapidjson::Value familyData(rapidjson::kObjectType);
-                familyData.AddMember("parent1HashVal", rapidjson::Value(parent1HashVal.c_str(), allocator).Move(), allocator);
-                familyData.AddMember("parent2HashVal", rapidjson::Value(parent2HashVal.c_str(), allocator).Move(), allocator);
-
-                rapidjson::Value children(rapidjson::kArrayType);
-                for (const auto &child : family.second)
-                {
-                    children.PushBack(rapidjson::Value(child->hashValue.c_str(), allocator).Move(), allocator);
-                }
-
-                familyData.AddMember("children", children, allocator);
-                families.PushBack(familyData, allocator);
+                children.PushBack(rapidjson::Value(child->hashValue.c_str(), allocator).Move(), allocator);
             }
-        }
 
-        document.AddMember("families", families, allocator);
-
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        document.Accept(writer);
-
-
-        ofstream outFile(filename, ios::out | ios::binary);
-        if (outFile.is_open())
-        {
-            outFile << buffer.GetString() << endl;
-            outFile.close();
-        }
-        else
-        {
-            cerr << "Error: Unable to open file for writing - " << filename << endl;
+            familyData.AddMember("children", children, allocator);
+            families.PushBack(familyData, allocator);
         }
     }
 
-bool GenealogyGraph::isAncestor(const Person* ancestor, const Person* person)
+    document.AddMember("families", families, allocator);
+
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    document.Accept(writer);
+
+    ofstream outFile(filename, ios::out | ios::binary);
+    if (outFile.is_open())
+    {
+        outFile << buffer.GetString() << endl;
+        outFile.close();
+    }
+    else
+    {
+        cerr << "Error: Unable to open file for writing - " << filename << endl;
+    }
+}
+
+bool GenealogyGraph::isAncestor(Person const *ancestor, Person const *person)
 {
     for (const auto &p : person->parent)
     {
@@ -262,26 +313,14 @@ bool GenealogyGraph::isAncestor(const Person* ancestor, const Person* person)
     return false;
 }
 
-bool GenealogyGraph::isAncestor(const string &n1, const string &ln1, const int &id1,
-                                const string &n2, const string &ln2, const int &id2)
+bool GenealogyGraph::isAncestor(string const &Ancestor, string const &person)
 {
-    string input1 = n1 + ln1 + to_string(id1);
-    string input2 = n2 + ln2 + to_string(id2);
-
-    string Ancestor = SHA256::getHashString(input1);
-    string person = SHA256::getHashString(input2);
 
     return isAncestor(adjacencyList[Ancestor], adjacencyList[person]);
 }
 
-bool GenealogyGraph::isSibling(const string &n1, const string &ln1, const int &id1,
-                               const string &n2, const string &ln2, const int &id2)
+bool GenealogyGraph::isSibling(string const &person1, string const &person2)
 {
-    string input1 = n1 + ln1 + to_string(id1);
-    string input2 = n2 + ln2 + to_string(id2);
-
-    string person1 = SHA256::getHashString(input1);
-    string person2 = SHA256::getHashString(input2);
 
     for (const auto &p : adjacencyList[person1]->parent)
     {
@@ -292,14 +331,8 @@ bool GenealogyGraph::isSibling(const string &n1, const string &ln1, const int &i
     return false;
 }
 
-bool GenealogyGraph::isDistantRelative(const string &n1, const string &ln1, const int &id1,
-                                       const string &n2, const string &ln2, const int &id2)
+bool GenealogyGraph::isDistantRelative(string const &person1, string const &person2)
 {
-    string input1 = n1 + ln1 + to_string(id1);
-    string input2 = n2 + ln2 + to_string(id2);
-
-    string person1 = SHA256::getHashString(input1);
-    string person2 = SHA256::getHashString(input2);
     auto p1 = adjacencyList[person1];
     auto p2 = adjacencyList[person2];
     if (!isAncestor(p1, p2) && !isAncestor(p2, p1) && findCommonAncestor(p1, p2) != "")
@@ -308,62 +341,48 @@ bool GenealogyGraph::isDistantRelative(const string &n1, const string &ln1, cons
     return false;
 }
 
-void GenealogyGraph::findAllAncestors(const Person* person1, set<Person*> &ancestors)
+string GenealogyGraph::findCommonAncestor(Person *person1, Person *person2)
 {
-    for (const auto &p : person1->parent)
-    {
-        ancestors.insert(p);
-        findAllAncestors(p, ancestors);
-    }
-}
 
-string GenealogyGraph::findCommonAncestor(const Person* person1, const Person* person2)
-{
-    set<Person*> ancestors1;
-    set<Person*> ancestors2;
+    findAllAncestorsBFS(person1);
+    Person *Found = findAllAncestorsBFS(person2);
 
-    findAllAncestors(person1, ancestors1);
-    findAllAncestors(person2, ancestors2);
-
-    for (auto it1 = ancestors1.rbegin(); it1 != ancestors1.rend(); ++it1)
-    {
-        for (auto it2 = ancestors2.rbegin(); it2 != ancestors2.rend(); ++it2)
-        {
-        if (*it1 == *it2)// Dereference the iterators to access Person objects
-        {
-            return (*it1)->hashValue;  // Dereference the iterator to access Person object's member
-        }
-        }
-    }
-
+    if (Found)
+        return Found->hashValue;
     return "";
 }
 
-string GenealogyGraph::findCommonAncestor(const string &n1, const string &ln1, const int &id1,
-                                               const string &n2, const string &ln2, const int &id2)
+GenealogyGraph::Person *GenealogyGraph::findAllAncestorsBFS(Person *person)
 {
-    string input1 = n1 + ln1 + to_string(id1);
-    string input2 = n2 + ln2 + to_string(id2);
+    queue<Person *> bfsQueue;
+    bfsQueue.push(person);
 
-    string person1 = SHA256::getHashString(input1);
-    string person2 = SHA256::getHashString(input2);
+    while (!bfsQueue.empty())
+    {
+        Person *current = bfsQueue.front();
+        bfsQueue.pop();
 
-    auto p1 = adjacencyList[person1];
-    auto p2 = adjacencyList[person2];
-
-    return findCommonAncestor(p1, p2);
+        for (Person *Parent : current->parent)
+        {
+            if (Parent->state == 'r')
+                return Parent;
+            Parent->state = 'r';
+            bfsQueue.push(Parent);
+        }
+    }
+    return nullptr;
+}
+string GenealogyGraph::findCommonAncestor(string const &person1, string const &person2)
+{
+    return findCommonAncestor(adjacencyList[person1], adjacencyList[person2]);
 }
 
-int GenealogyGraph::findFurthestDescendant(const string &n1, const string &ln1, const int &id1)
+int GenealogyGraph::findFurthestDescendant(string const &person)
 {
-    string input1 = n1 + ln1 + to_string(id1);
-    string person = SHA256::getHashString(input1);
-
-    auto p= adjacencyList[person];
-    return findFurthestDescendant(p);
+    return findFurthestDescendant(adjacencyList[person]);
 }
 
-int GenealogyGraph::findFurthestDescendant(const Person* person)
+int GenealogyGraph::findFurthestDescendant(Person const *person)
 {
     int maxDistance = 0;
 
@@ -376,4 +395,103 @@ int GenealogyGraph::findFurthestDescendant(const Person* person)
         }
     }
     return maxDistance;
+}
+pair<GenealogyGraph::Person *, int> GenealogyGraph::dfs(GenealogyGraph::Person *current)
+{
+    current->visited = true;
+
+    int maxDistance = 0;
+    Person *farthestPerson = current;
+
+    for (Person *parent : current->parent)
+    {
+        if (!parent->visited)
+        {
+            pair<Person *, int> result = dfs(parent);
+            if (result.second > maxDistance)
+            {
+                maxDistance = result.second;
+                farthestPerson = result.first;
+            }
+        }
+    }
+    for (const auto &family : current->married)
+    {
+        for (Person *child : family.second)
+        {
+            if (!child->visited)
+            {
+                pair<Person *, int> result = dfs(child);
+                if (result.second > maxDistance)
+                {
+                    maxDistance = result.second;
+                    farthestPerson = result.first;
+                }
+            }
+        }
+    }
+
+    return {farthestPerson, maxDistance + 1};
+}
+pair<string, string> GenealogyGraph::findMostDistantRelationship()
+{
+    int n = allPeople.size();
+    vector<vector<int>> shortestPaths(n, vector<int>(n, -1));
+    pair<string, string> mostDistantPair;
+    int diameter = 0;
+
+    for (int s = 0; s < n; ++s)
+    {
+        vector<bool> visited(n, false);
+        queue<int> q;
+
+        visited[s] = true;
+        q.push(s);
+        shortestPaths[s][s] = 0;
+        while (!q.empty())
+        {
+
+            int v = q.front();
+            q.pop();
+            if (!allPeople[v]->parent.empty())
+            {
+                for (Person *parent : allPeople[v]->parent)
+                {
+                    int id = parent->id;
+                    if (!visited[id])
+                    {
+                        visited[id] = true;
+                        shortestPaths[s][id] = shortestPaths[s][v] + 1;
+                        if (shortestPaths[s][id] > diameter)
+                        {
+                            diameter = shortestPaths[s][id];
+                            mostDistantPair = {allPeople[s]->hashValue, allPeople[id]->hashValue};
+                        }
+
+                        q.push(id);
+                    }
+                }
+            }
+            for (const auto &family : allPeople[v]->married)
+            {
+                for (Person *child : family.second)
+                {
+                    int id = child->id;
+                    if (!visited[id])
+                    {
+                        visited[id] = true;
+                        shortestPaths[s][id] = shortestPaths[s][v] + 1;
+                        if (shortestPaths[s][id] > diameter)
+                        {
+                            diameter = shortestPaths[s][id];
+                            mostDistantPair = {allPeople[s]->hashValue, allPeople[id]->hashValue};
+                        }
+
+                        q.push(id);
+                    }
+                }
+            }
+        }
+    }
+    return mostDistantPair;
 }

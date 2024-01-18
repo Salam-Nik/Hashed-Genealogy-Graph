@@ -1,4 +1,4 @@
-from HashedGenealogyGraph import HGG, RelationType
+from HashedGenealogyGraph import HGG
 import json
 
 
@@ -51,26 +51,27 @@ def main():
         47: ['Ronald', 'Vance', 47],
         21: ['Adam', 'Rodriguez', 21],
      }
-
+    print("hhh")
     hgg = HGG()
-
-    graph = hgg.createHashedGenealogyGraph(auto_save=True)
-    
+    print("hhh")
+    graph = hgg.createHashedGenealogyGraph()
+    print("hhh")
     filename ="dataset/genealogy_dataset.json"
     with open(filename, 'r') as file:
         data = json.load(file)
+    print("json loaded")
 
+    # for marriage in data["marriages"]:
+    #     spouse1 = marriage["spouse1"]
+    #     spouse2 = marriage["spouse2"]
+    #     children = marriage["children"]
 
-    for marriage in data["marriages"]:
-        spouse1 = marriage["spouse1"]
-        spouse2 = marriage["spouse2"]
-        children = marriage["children"]
+    #     children_data = [(child["name"], child["last_name"], int(child["id"])) for child in children]
 
-        children_data = [(child["name"], child["last_name"], int(child["id"])) for child in children]
-
-        hgg.addEdge(graph, spouse1["name"],spouse1["last_name"], spouse1["id"],
-                    spouse2["name"],spouse2["last_name"], spouse2["id"], children_data)
-
+    #     hgg.addEdge(graph, spouse1["name"],spouse1["last_name"], spouse1["id"],
+    #                 spouse2["name"],spouse2["last_name"], spouse2["id"], children_data)
+    hgg.addEdge(graph,data)
+    
     while True:
         print("\nGenealogy Program Menu:")
         print("1. Check Ancestor")
@@ -78,6 +79,7 @@ def main():
         print("3. Check Distant Relative")
         print("4. Find Common Ancestor")
         print("5. Find Furthest Descendant")
+        print("6. Find Furthest Descendant")
         print("Type 'exit' to quit")
 
         user_input = input("Enter your choice: ")
@@ -86,28 +88,30 @@ def main():
             print("Exiting the program.")
             break
 
-        if user_input not in ["1", "2", "3", "4", "5"]:
+        if user_input not in ["1", "2", "3", "4", "5", "6"]:
             print("Invalid choice. Please enter a valid option.")
             continue
-
-        id1 = int(input("Enter first ID 1: "))
-        name1 = ds[id1][0]
-        last_name1 = ds[id1][1]
-        if user_input != "5":
-            id2 = int(input("Enter second ID 2: "))
-            name2 = ds[id2][0]
-            last_name2 = ds[id2][1]
+        if user_input != "6":
+            id1 = int(input("Enter first ID 1: "))
+            name1 = ds[id1][0]
+            last_name1 = ds[id1][1]
+            if user_input != "5":
+                id2 = int(input("Enter second ID 2: "))
+                name2 = ds[id2][0]
+                last_name2 = ds[id2][1]
 
         if user_input == "1":
-            result = hgg.isAncestor(graph, name1, last_name1, id1, name2, last_name2, id2)
+            result = hgg.isAncestor(graph, id1, id2)
         elif user_input == "2":
-            result = hgg.isSibling(graph, name1, last_name1, id1, name2, last_name2, id2)
+            result = hgg.isSibling(graph, id1, id2)
         elif user_input == "3":
-            result = hgg.isDistantRelative(graph, name1, last_name1, id1, name2, last_name2, id2)
+            result = hgg.isDistantRelative(graph, id1, id2)
         elif user_input == "4":
-            result = hgg.findCommonAncestor(graph, name1, last_name1, id1, name2, last_name2, id2)
+            result = hgg.findCommonAncestor(graph, id1, id2)
         elif user_input == "5":
-            result = hgg.findFurthestDescendant(graph, name1, last_name1, id1)
+            result = hgg.findFurthestDescendant(graph, id1)
+        elif user_input == "6":
+            result = hgg.findMostDistantRelationship(graph)
 
         print(f"\nResult: {result}")
 

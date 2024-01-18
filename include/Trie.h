@@ -48,8 +48,8 @@ public:
 
     ~Trie();
 
-    void insert(const string &key, const T &value);
-    void insert(const pair<string, T> &keyValuePair);
+    void insert(string &key,T* value);
+    void insert(pair<string, T*> &keyValuePair);
 
     TrieIterator<T> begin() const;
     TrieIterator<T> end() const;
@@ -59,12 +59,11 @@ public:
     bool contains(const string &key) const;
 
     string getKey(const T &value) const;
-    vector<T*> values();
+    vector<pair<string, T *>> values();
 
 private:
     void deleteSubtree(TrieNode<T> *node);
-    void getAllValuesHelper(const TrieNode<T> *node, const string &currentKey, vector<T*> &result);
-
+    void getAllValuesHelper(const TrieNode<T> *root, string &currentKey, vector<pair<string, T *>> &result);
 };
 
 #endif // TRIE_H
