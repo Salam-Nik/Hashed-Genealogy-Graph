@@ -51,11 +51,11 @@ def main():
         47: ['Ronald', 'Vance', 47],
         21: ['Adam', 'Rodriguez', 21],
      }
-    print("hhh")
+
     hgg = HGG()
-    print("hhh")
+
     graph = hgg.createHashedGenealogyGraph()
-    print("hhh")
+
     filename ="dataset/genealogy_dataset.json"
     with open(filename, 'r') as file:
         data = json.load(file)

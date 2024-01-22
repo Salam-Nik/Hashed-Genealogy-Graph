@@ -1,88 +1,87 @@
 #include "../include/GenealogyGraph.h"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+// #ifdef __cplusplus
+// extern "C"
+// {
+// #endif
 
-    // Helper function to convert C-style strings to C++ string
-    string cStringToString(char const *cStr)
-    {
-        return (cStr != nullptr) ? string(cStr) : string();
-    }
+//     string cStringToString(char const *cStr)
+//     {
+//         return (cStr != nullptr) ? string(cStr) : string();
+//     }
 
-    pair<char *, char *> findMostDistantRelationship(GenealogyGraph *obj)
-    {
-        auto vec = obj->findMostDistantRelationship();
-        char *res1 = new char[vec.first.length() + 1];
+//     pair<char *, char *> findMostDistantRelationship(GenealogyGraph *obj)
+//     {
+//         auto vec = obj->findMostDistantRelationship();
+//         char *res1 = new char[vec.first.length() + 1];
 
-        char *res2 = new char[vec.second.length() + 1];
-        strcpy(res2, vec.second.c_str());
+//         char *res2 = new char[vec.second.length() + 1];
+//         strcpy(res2, vec.second.c_str());
 
-        return pair<char *, char *>(res1, res2);
-    }
-    GenealogyGraph *createHashedGenealogyGraph(const bool autoSave)
-    {
-        return new GenealogyGraph(autoSave);
-    }
+//         return pair<char *, char *>(res1, res2);
+//     }
+//     GenealogyGraph *createHashedGenealogyGraph(const bool autoSave)
+//     {
+//         return new GenealogyGraph(autoSave);
+//     }
 
-    void addEdge(GenealogyGraph *obj, const char *json_data)
-    {
-        obj->addEdge(json_data);
-    }
+//     void addEdge(GenealogyGraph *obj, const char *json_data)
+//     {
+//         obj->addEdge(json_data);
+//     }
 
-    int isAncestor(GenealogyGraph *obj, int const id1, int const id2)
-    {
-        string hashedId1 = SHA256::getHashString(to_string(id1));
-        string hashedId2 = SHA256::getHashString(to_string(id2));
+//     int isAncestor(GenealogyGraph *obj, int const id1, int const id2)
+//     {
+//         string hashedId1 = SHA256::getHashString(to_string(id1));
+//         string hashedId2 = SHA256::getHashString(to_string(id2));
 
-        return obj->isAncestor(hashedId1, hashedId2) ? 1 : 0;
-    }
+//         return obj->isAncestor(hashedId1, hashedId2) ? 1 : 0;
+//     }
 
-    int isSibling(GenealogyGraph *obj, int const id1, int const id2)
-    {
-        string hashedId1 = SHA256::getHashString(to_string(id1));
-        string hashedId2 = SHA256::getHashString(to_string(id2));
+//     int isSibling(GenealogyGraph *obj, int const id1, int const id2)
+//     {
+//         string hashedId1 = SHA256::getHashString(to_string(id1));
+//         string hashedId2 = SHA256::getHashString(to_string(id2));
 
-        return obj->isSibling(hashedId1, hashedId2) ? 1 : 0;
-    }
+//         return obj->isSibling(hashedId1, hashedId2) ? 1 : 0;
+//     }
 
-    int isDistantRelative(GenealogyGraph *obj, int const id1, int const id2)
-    {
-        string hashedId1 = SHA256::getHashString(to_string(id1));
-        string hashedId2 = SHA256::getHashString(to_string(id2));
+//     int isDistantRelative(GenealogyGraph *obj, int const id1, int const id2)
+//     {
+//         string hashedId1 = SHA256::getHashString(to_string(id1));
+//         string hashedId2 = SHA256::getHashString(to_string(id2));
 
-        return obj->isDistantRelative(hashedId1, hashedId2) ? 1 : 0;
-    }
+//         return obj->isDistantRelative(hashedId1, hashedId2) ? 1 : 0;
+//     }
 
-    const char *findCommonAncestor(GenealogyGraph *obj, int const id1, int const id2)
-    {
-        string hashedId1 = SHA256::getHashString(to_string(id1));
-        string hashedId2 = SHA256::getHashString(to_string(id2));
+//     const char *findCommonAncestor(GenealogyGraph *obj, int const id1, int const id2)
+//     {
+//         string hashedId1 = SHA256::getHashString(to_string(id1));
+//         string hashedId2 = SHA256::getHashString(to_string(id2));
 
-        string commonAncestor = obj->findCommonAncestor(hashedId1, hashedId2);
+//         string commonAncestor = obj->findCommonAncestor(hashedId1, hashedId2);
 
-        char *res = new char[commonAncestor.length() + 1];
-        strcpy(res, commonAncestor.c_str());
+//         char *res = new char[commonAncestor.length() + 1];
+//         strcpy(res, commonAncestor.c_str());
 
-        return res;
-    }
+//         return res;
+//     }
 
-    int findFurthestDescendant(GenealogyGraph *obj, int const id1)
-    {
-        string hashedId1 = SHA256::getHashString(to_string(id1));
+//     int findFurthestDescendant(GenealogyGraph *obj, int const id1)
+//     {
+//         string hashedId1 = SHA256::getHashString(to_string(id1));
 
-        return obj->findFurthestDescendant(hashedId1);
-    }
+//         return obj->findFurthestDescendant(hashedId1);
+//     }
 
-    void deleteHashedGenealogyGraph(GenealogyGraph *obj)
-    {
-        delete obj;
-    }
+//     void deleteHashedGenealogyGraph(GenealogyGraph *obj)
+//     {
+//         delete obj;
+//     }
 
-#ifdef __cplusplus
-}
-#endif
+// #ifdef __cplusplus
+// }
+// #endif
 
 GenealogyGraph::GenealogyGraph(bool const autoSave) : auto_save(autoSave)
 {
@@ -152,9 +151,7 @@ void GenealogyGraph::addFamily(rapidjson::Value const &marriageItem)
     }
 
     if (auto_save)
-    {
         saveToFile("genealogy_save.json");
-    }
 }
 
 void GenealogyGraph::addEdge(char const *json_data)
@@ -179,9 +176,7 @@ void GenealogyGraph::addEdge(char const *json_data)
         }
     }
     if (auto_save)
-    {
         saveToFile("genealogy_save.json");
-    }
 }
 
 void GenealogyGraph::loadFromFile(string const &filename)
@@ -301,6 +296,13 @@ void GenealogyGraph::saveToFile(string const &filename)
     }
 }
 
+bool GenealogyGraph::isAncestor(int id1, int id2)
+{
+    string ancestor = SHA256::getHashString(to_string(id1));
+    string person = SHA256::getHashString(to_string(id2));
+    return isAncestor(adjacencyList[ancestor], adjacencyList[person]);
+}
+
 bool GenealogyGraph::isAncestor(Person const *ancestor, Person const *person)
 {
     for (const auto &p : person->parent)
@@ -313,15 +315,10 @@ bool GenealogyGraph::isAncestor(Person const *ancestor, Person const *person)
     return false;
 }
 
-bool GenealogyGraph::isAncestor(string const &Ancestor, string const &person)
+bool GenealogyGraph::isSibling(int const id1, int const id2)
 {
-
-    return isAncestor(adjacencyList[Ancestor], adjacencyList[person]);
-}
-
-bool GenealogyGraph::isSibling(string const &person1, string const &person2)
-{
-
+    string person1 = SHA256::getHashString(to_string(id1));
+    string person2 = SHA256::getHashString(to_string(id2));
     for (const auto &p : adjacencyList[person1]->parent)
     {
         auto it = find(adjacencyList[person2]->parent.begin(), adjacencyList[person2]->parent.end(), p);
@@ -331,14 +328,23 @@ bool GenealogyGraph::isSibling(string const &person1, string const &person2)
     return false;
 }
 
-bool GenealogyGraph::isDistantRelative(string const &person1, string const &person2)
+bool GenealogyGraph::isDistantRelative(int const id1, int const id2)
 {
+    string person1 = SHA256::getHashString(to_string(id1));
+    string person2 = SHA256::getHashString(to_string(id2));
     auto p1 = adjacencyList[person1];
     auto p2 = adjacencyList[person2];
     if (!isAncestor(p1, p2) && !isAncestor(p2, p1) && findCommonAncestor(p1, p2) != "")
         return true;
 
     return false;
+}
+
+string GenealogyGraph::findCommonAncestor(int const id1, int const id2)
+{
+    string person1 = SHA256::getHashString(to_string(id1));
+    string person2 = SHA256::getHashString(to_string(id2));
+    return findCommonAncestor(adjacencyList[person1], adjacencyList[person2]);
 }
 
 string GenealogyGraph::findCommonAncestor(Person *person1, Person *person2)
@@ -352,7 +358,7 @@ string GenealogyGraph::findCommonAncestor(Person *person1, Person *person2)
     return "";
 }
 
-GenealogyGraph::Person *GenealogyGraph::findAllAncestorsBFS(Person *person)
+Person *GenealogyGraph::findAllAncestorsBFS(Person *person)
 {
     queue<Person *> bfsQueue;
     bfsQueue.push(person);
@@ -372,13 +378,9 @@ GenealogyGraph::Person *GenealogyGraph::findAllAncestorsBFS(Person *person)
     }
     return nullptr;
 }
-string GenealogyGraph::findCommonAncestor(string const &person1, string const &person2)
+int GenealogyGraph::findFurthestDescendant(int const id)
 {
-    return findCommonAncestor(adjacencyList[person1], adjacencyList[person2]);
-}
-
-int GenealogyGraph::findFurthestDescendant(string const &person)
-{
+    string person = SHA256::getHashString(to_string(id));
     return findFurthestDescendant(adjacencyList[person]);
 }
 
@@ -395,43 +397,6 @@ int GenealogyGraph::findFurthestDescendant(Person const *person)
         }
     }
     return maxDistance;
-}
-pair<GenealogyGraph::Person *, int> GenealogyGraph::dfs(GenealogyGraph::Person *current)
-{
-    current->visited = true;
-
-    int maxDistance = 0;
-    Person *farthestPerson = current;
-
-    for (Person *parent : current->parent)
-    {
-        if (!parent->visited)
-        {
-            pair<Person *, int> result = dfs(parent);
-            if (result.second > maxDistance)
-            {
-                maxDistance = result.second;
-                farthestPerson = result.first;
-            }
-        }
-    }
-    for (const auto &family : current->married)
-    {
-        for (Person *child : family.second)
-        {
-            if (!child->visited)
-            {
-                pair<Person *, int> result = dfs(child);
-                if (result.second > maxDistance)
-                {
-                    maxDistance = result.second;
-                    farthestPerson = result.first;
-                }
-            }
-        }
-    }
-
-    return {farthestPerson, maxDistance + 1};
 }
 pair<string, string> GenealogyGraph::findMostDistantRelationship()
 {

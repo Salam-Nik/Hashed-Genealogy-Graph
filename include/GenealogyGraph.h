@@ -25,21 +25,22 @@ struct tuple_str_int
     int third;
 };
 
+struct Person
+{
+    string hashValue;
+    unordered_map<Person *, set<Person *>> married;
+    vector<Person *> parent;
+
+    bool visited;
+
+    int id;
+
+    char state = 'w';
+};
+
 class GenealogyGraph
 {
 private:
-    struct Person
-    {
-        string hashValue;
-        unordered_map<Person *, set<Person *>> married;
-        vector<Person *> parent;
-
-        bool visited;
-
-        int id;
-
-        char state = 'w';
-    };
     bool auto_save;
     Trie<Person> adjacencyList = Trie<Person>();
 
@@ -68,15 +69,15 @@ public:
 
     void addEdge(char const *json_data);
 
-    bool isAncestor(string const &ancestor, string const &person2);
+    bool isAncestor(int id1, int id2);
 
-    bool isDistantRelative(string const &person1, string const &person2);
+    bool isDistantRelative(int const id1, int const id2);
 
-    bool isSibling(string const &person1, string const &person2);
+    bool isSibling(int const id1, int const id2);
 
-    string findCommonAncestor(string const &person1, string const &person2);
+    string findCommonAncestor(int const id1, int const id2);
 
-    int findFurthestDescendant(string const &person);
+    int findFurthestDescendant(int const id);
 
     Person *findAllAncestorsBFS(Person *person);
 

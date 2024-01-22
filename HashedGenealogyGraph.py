@@ -9,7 +9,7 @@ class TupleStrStr(Structure):
 
 class HGG:
 
-    LIBRARY_PATH = "build/GenealogyGraph.so"
+    LIBRARY_PATH = "build/PyCppInterface.so"
 
     def __init__(self, library_path=LIBRARY_PATH):
         try:

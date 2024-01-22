@@ -165,4 +165,4 @@ vector<pair<string, T*>> Trie<T>::values() {
 
 
  
-template class Trie<GenealogyGraph::Person>;
+template class Trie<Person>;
