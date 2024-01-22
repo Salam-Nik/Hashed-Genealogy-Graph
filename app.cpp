@@ -35,11 +35,11 @@ int main()
     auto page = crow::mustache::load_text("home.html");
     return page; });
 
-    // Customize CORS
+  
     auto &cors = app.get_middleware<crow::CORSHandler>();
 
     CROW_ROUTE(app, "/menu")
-        .methods("POST"_method)([&hgg](const crow::request &req)
+        .methods("POST"_method)([&hgg](crow::request req) 
                                 {
         rapidjson::Document json_data;
         const char* json_str = req.body.c_str();
@@ -57,7 +57,9 @@ int main()
             case '1':{
                                 int id1 = stoi(json_data["data"]["id1"].GetString());
                 int id2 = user_input[0] != 5 ? stoi(json_data["data"]["id2"].GetString()) : 0;
-                result = "Result: " + hgg.isAncestor(id1, id2);
+                result = "{\"result\": \"" + std::to_string(hgg.isAncestor(id1, id2)) + "\"}";
+
+
                 break;
             }
             case '2':{
