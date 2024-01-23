@@ -87,8 +87,8 @@ GenealogyGraph::GenealogyGraph(bool const autoSave) : auto_save(autoSave)
 {
 
     allPeople.clear();
-    if (auto_save)
-        loadFromFile("genealogy_save.json");
+    // if (auto_save)
+    //     loadFromFile("genealogy_save.json");
 }
 
 void GenealogyGraph::addFamily(rapidjson::Value const &marriageItem)
@@ -198,7 +198,7 @@ void GenealogyGraph::loadFromFile(string const &filename)
 
         if (document.HasParseError())
         {
-            cerr << "Error parsing JSON: " << rapidjson::GetParseErrorFunc(document.GetParseError())(document.GetParseError()) << " (Code " << document.GetParseError() << ")" << endl;
+            cerr << "Error parsing JSON(L201): " << rapidjson::GetParseErrorFunc(document.GetParseError())(document.GetParseError()) << " (Code " << document.GetParseError() << ")" << endl;
             return;
         }
 

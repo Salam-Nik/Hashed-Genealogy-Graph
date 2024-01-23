@@ -6,7 +6,7 @@
 int main()
 {
     GenealogyGraph hgg;
-
+    
     std::ifstream jsonFile("dataset/genealogy_dataset.json");
     if (!jsonFile.is_open()) {
         std::cerr << "Error opening JSON file" << std::endl;
@@ -108,4 +108,3 @@ int main()
 
     app.bindaddr("127.0.0.1").port(18080).run();
 }
-
