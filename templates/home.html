@@ -273,12 +273,28 @@
             }
         }
         function showFamilyTree() {
-            var family = new FamilyTree(document.getElementById("familyTreeButton"), {
+            // Open the new window in maximized size
+            var familyTreeWindow = window.open("", "Family Tree", "width=" + screen.availWidth + ",height=" + screen.availHeight);
+
+            // Ensure the HTML and body elements in the new window have 100% height
+            familyTreeWindow.document.documentElement.style.height = "100%";
+            familyTreeWindow.document.body.style.height = "100%";
+
+            // Create a new FamilyTree instance
+            var familyTreeContainer = familyTreeWindow.document.createElement("div");
+            familyTreeContainer.style.width = "100%";
+            familyTreeContainer.style.height = "100%";
+            familyTreeContainer.style.overflow = "hidden"; // Ensure that overflow is set to hidden
+            familyTreeWindow.document.body.appendChild(familyTreeContainer);
+
+            var familyTree = new FamilyTree(familyTreeContainer, {
                 mouseScrool: FamilyTree.action.none,
                 template: "hugo",
                 nodeBinding: {
                     field_0: "name"
                 },
+                width: "100%",
+                height: "100%",
                 nodes: [
                     { id: 1, pids: [2], name: "Amber McKenzie", gender: "female" },
                     { id: 2, pids: [1], name: "Ava Field", gender: "male" },
@@ -288,6 +304,12 @@
                 ]
             });
         }
+
+
+
+
+
+
     </script>
 </body>
 </html>
