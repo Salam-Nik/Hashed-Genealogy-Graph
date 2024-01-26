@@ -1,6 +1,7 @@
 #include "crow.h"
 #include "crow/middlewares/cors.h"
 
+
 #include "include/GenealogyGraph.h"
 
 int main()
@@ -12,7 +13,7 @@ int main()
         std::cerr << "Error opening JSON file" << std::endl;
         return 1;
     }
-
+    
     std::ostringstream jsonContent;
     jsonContent << jsonFile.rdbuf();
     std::string jsonString = jsonContent.str();
@@ -28,14 +29,14 @@ int main()
     hgg.addEdge(jsonString.c_str());
 
     crow::App<crow::CORSHandler> app;
-
+    
     CROW_ROUTE(app, "/")
     ([]()
      {
     auto page = crow::mustache::load_text("home.html");
     return page; });
 
-  
+    
     auto &cors = app.get_middleware<crow::CORSHandler>();
 
     CROW_ROUTE(app, "/menu")
@@ -43,6 +44,7 @@ int main()
                                 {
         rapidjson::Document json_data;
         const char* json_str = req.body.c_str();
+        
         rapidjson::ParseResult parseResult = json_data.Parse<0>(json_str);
         cout << "pars" <<json_str << endl;
         cout << "req" << req.body << endl;
@@ -103,8 +105,9 @@ int main()
                 result = "Invalid option. Please enter a valid option.";
                 break;
         }
-
-        return crow::response{result}; });
-
+        auto response =  crow::response{result};
+        response.set_static_file_info("../");
+        return  response; 
+        });
     app.bindaddr("127.0.0.1").port(18080).run();
 }

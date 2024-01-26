@@ -114,20 +114,17 @@ void GenealogyGraph::addFamily(rapidjson::Value const &marriageItem)
 
                 string childHash = SHA256::getHashString(hashStr);
 
+                bool check1 = adjacencyList.contains(p1) ? true : false;
+
+                bool check2 = adjacencyList.contains(p2) ? true : false;
+
+                bool check3 = adjacencyList.contains(childHash) ? true : false;
+
                 auto child = adjacencyList[childHash];
 
                 auto parent1 = adjacencyList[p1];
 
                 auto parent2 = adjacencyList[p2];
-
-                allPeople.push_back(parent1);
-
-                parent1->id = n++;
-                allPeople.push_back(parent2);
-
-                parent2->id = n++;
-                allPeople.push_back(child);
-                child->id = n;
                 if (child->parent.empty())
                 {
                     if (!p1.empty())
@@ -136,9 +133,27 @@ void GenealogyGraph::addFamily(rapidjson::Value const &marriageItem)
                         parent1->married[parent2].insert(child);
                     child->parent.emplace_back(parent1);
                     child->parent.emplace_back(parent2);
+                    parent1->gender = marriageItem["spouse1"]["gender"].GetInt();
+                     parent2->gender = marriageItem["spouse2"]["gender"].GetInt();
+                    child->gender = childItems["gender"].GetInt();
                     child->hashValue = childHash;
                     parent1->hashValue = p1;
                     parent2->hashValue = p2;
+                }
+                if (!check1)
+                {
+                    allPeople.push_back(parent1);
+                    parent1->id = n++;
+                }
+                if (!check2)
+                {
+                    allPeople.push_back(parent2);
+                    parent2->id = n++;
+                }
+                if (!check3)
+                {
+                    allPeople.push_back(child);
+                    child->id = n;
                 }
             }
         }
@@ -247,53 +262,83 @@ void GenealogyGraph::loadFromFile(string const &filename)
     }
 }
 
-void GenealogyGraph::saveToFile(string const &filename)
+void GenealogyGraph::saveToFile(const std::string &filename)
 {
+    cerr << "F1" << endl;
     rapidjson::Document document;
     document.SetObject();
 
     auto &allocator = document.GetAllocator();
-    rapidjson::Value families(rapidjson::kArrayType);
+    rapidjson::Value nodes(rapidjson::kArrayType);
+    rapidjson::Value dict(rapidjson::kObjectType);
 
-    for (const auto entry : adjacencyList.values())
+    for (int i = 0; i < allPeople.size(); i++)
     {
-        string parent1HashVal = entry.first;
+        auto person = allPeople[i];
 
-        for (const auto &family : entry.second->married)
+        rapidjson::Value node(rapidjson::kObjectType);
+        node.AddMember("id", i, allocator);
+        //!   cerr<< "F1" << endl;
+        string gender = person->gender ? "female" : "male";
+        node.AddMember("hash", rapidjson::Value(person->hashValue.c_str(), allocator).Move(), allocator);
+        node.AddMember("gender", rapidjson::Value(gender.c_str(), allocator).Move(), allocator);
+        if (!person->married.empty())
         {
-            string parent2HashVal = family.first->hashValue;
 
-            rapidjson::Value familyData(rapidjson::kObjectType);
-            familyData.AddMember("parent1HashVal", rapidjson::Value(parent1HashVal.c_str(), allocator).Move(), allocator);
-            familyData.AddMember("parent2HashVal", rapidjson::Value(parent2HashVal.c_str(), allocator).Move(), allocator);
-
-            rapidjson::Value children(rapidjson::kArrayType);
-            for (const auto &child : family.second)
+            rapidjson::Value pids(rapidjson::kArrayType);
+            for (const auto &marriedPerson : person->married)
             {
-                children.PushBack(rapidjson::Value(child->hashValue.c_str(), allocator).Move(), allocator);
+                rapidjson::Value marriedPersonId(rapidjson::kNumberType);
+                marriedPersonId.SetInt(marriedPerson.first->id);
+                pids.PushBack(marriedPersonId, allocator);
             }
-
-            familyData.AddMember("children", children, allocator);
-            families.PushBack(familyData, allocator);
+            node.AddMember("pids", pids, allocator);
+            //!    cerr<< "F2" << endl;
         }
+
+        if (!person->parent.empty())
+        {
+            rapidjson::Value p1(rapidjson::kNumberType);
+            p1.SetInt(person->parent[0]->id);
+            rapidjson::Value p2(rapidjson::kNumberType);
+            p2.SetInt(person->parent[1]->id);
+
+            node.AddMember("mid", p1, allocator);
+            node.AddMember("fid", p2, allocator);
+            //!   cerr<< "F3" << endl;
+        }
+
+        // Add other fields like name and gender if needed
+        // node.AddMember("name", rapidjson::Value(person->name.c_str(), allocator).Move(), allocator);
+        // node.AddMember("gender", rapidjson::Value(person->gender.c_str(), allocator).Move(), allocator);
+
+        nodes.PushBack(node, allocator);
+        //!   cerr<< "F4" << endl;
+
+        // Add the person's hashValue to the dictionary
+        dict.AddMember(rapidjson::Value(std::to_string(i).c_str(), allocator).Move(), rapidjson::Value(person->hashValue.c_str(), allocator).Move(), allocator);
+
+        //!   cerr<< "F5" << endl;
     }
 
-    document.AddMember("families", families, allocator);
+    document.AddMember("nodes", nodes, allocator);
+    document.AddMember("dict", dict, allocator);
 
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     document.Accept(writer);
 
-    ofstream outFile(filename, ios::out | ios::binary);
+    std::ofstream outFile(filename, std::ios::out | std::ios::binary);
     if (outFile.is_open())
     {
-        outFile << buffer.GetString() << endl;
+        outFile << buffer.GetString() << std::endl;
         outFile.close();
     }
     else
     {
-        cerr << "Error: Unable to open file for writing - " << filename << endl;
+        std::cerr << "Error: Unable to open file for writing - " << filename << std::endl;
     }
+    cerr << "F5" << endl;
 }
 
 bool GenealogyGraph::isAncestor(int id1, int id2)

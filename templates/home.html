@@ -96,6 +96,7 @@
             border: 1px solid #ddd;
             border-radius: 5px;
         }
+
         .tree-container {
             width: 60%;
             margin: 20px auto;
@@ -120,7 +121,7 @@
         #island-button:hover {
             background-color: #218838;
         }
-        
+
         #familyTreeButton {
             position: fixed;
             bottom: 20px;
@@ -132,7 +133,13 @@
             font-size: 18px;
             cursor: pointer;
             border-radius: 5px;
-            transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+
+            /* #tree>svg {
+                background-color: #2E2E2E;
+            } */
+
+            transition: background-color 0.3s ease-in-out,
+                transform 0.2s ease-in-out;
         }
 
         #familyTreeButton:hover {
@@ -167,7 +174,7 @@
         <label for="fileInput">Choose a dataset file:</label>
         <input type="file" id="fileInput" accept=".json">
     </div>
-    <button id="familyTreeButton" onclick="showFamilyTree()">Show Family Tree</button>
+    <button id="familyTreeButton" onclick="showFamilyTreeFromJSON()">Show Family Tree</button>
 
     <script>
         function getFileName() {
@@ -272,37 +279,64 @@
                     alert("Invalid option. Please enter a valid option.");
             }
         }
-        function showFamilyTree() {
-            // Open the new window in maximized size
+        function showFamilyTreeFromJSON() {
+
+            var jsonFilePath = "static/genealogy_save.json";
+
+
+            fetch(jsonFilePath)
+                .then(response => response.json())
+                .then(data => {
+
+                    showFamilyTree(data.nodes);
+                })
+                .catch(error => {
+                    console.error("Error loading JSON:", error);
+                });
+        }
+        function showFamilyTree(data) {
+
             var familyTreeWindow = window.open("", "Family Tree", "width=" + screen.availWidth + ",height=" + screen.availHeight);
 
-            // Ensure the HTML and body elements in the new window have 100% height
             familyTreeWindow.document.documentElement.style.height = "100%";
             familyTreeWindow.document.body.style.height = "100%";
 
-            // Create a new FamilyTree instance
             var familyTreeContainer = familyTreeWindow.document.createElement("div");
             familyTreeContainer.style.width = "100%";
             familyTreeContainer.style.height = "100%";
-            familyTreeContainer.style.overflow = "hidden"; // Ensure that overflow is set to hidden
+            familyTreeContainer.style.overflow = "hidden";
             familyTreeWindow.document.body.appendChild(familyTreeContainer);
 
             var familyTree = new FamilyTree(familyTreeContainer, {
-                mouseScrool: FamilyTree.action.none,
+                mode: "dark",
+                //mouseScrool: FamilyTree.action.none,
+                //scaleInitial: FamilyTree.match.boundary,
                 template: "hugo",
+
                 nodeBinding: {
-                    field_0: "name"
+                    field_0: "id"
                 },
                 width: "100%",
                 height: "100%",
-                nodes: [
-                    { id: 1, pids: [2], name: "Amber McKenzie", gender: "female" },
-                    { id: 2, pids: [1], name: "Ava Field", gender: "male" },
-                    { id: 3, mid: 1, fid: 2, name: "Peter Stevens", gender: "male" },
-                    { id: 4, mid: 1, fid: 2, name: "Savin Stevens", gender: "male" },
-                    { id: 5, mid: 1, fid: 2, name: "Emma Stevens", gender: "female" }
-                ]
+
+                nodes: data
             });
+            function getRootOf(node) {
+                while (node) {
+                    if (!family.getNode(node.mid)) {
+                        break;
+                    }
+                    node = family.getNode(node.mid);
+                }
+                return node;
+            }
+
+            family.onInit(() => {
+                var root = getRootOf(family.getNode(id));
+                family.config.roots = [root.id];
+                family.draw();
+            });
+
         }
 
 
@@ -312,4 +346,5 @@
 
     </script>
 </body>
+
 </html>

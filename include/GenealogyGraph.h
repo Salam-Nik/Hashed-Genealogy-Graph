@@ -32,7 +32,7 @@ struct Person
     vector<Person *> parent;
 
     bool visited;
-
+    bool gender;
     int id;
 
     char state = 'w';
