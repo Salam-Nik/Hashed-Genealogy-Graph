@@ -70,6 +70,7 @@
 
         #result {
             font-size: 18px;
+            color: black;
         }
 
         #file-input-container {
@@ -200,6 +201,7 @@
                     if (xhr.status == 200) {
                         var response = JSON.parse(xhr.responseText);
                         callback(response);
+                        console.log(response);
                     } else {
                         console.error("Error:", xhr.status, xhr.statusText);
                     }
@@ -221,7 +223,8 @@
                     var id2 = userInput !== "5" ? prompt("Enter second ID:") : null;
 
                     makeAjaxRequest(userInput, { "id1": id1, "id2": id2 }, function (response) {
-                        resultElement.textContent = "Result: " + response;
+                        console.log("hi");
+                        resultElement.textContent = "Result: " + JSON.stringify(response);
                         resultContainer.style.display = "block";
                     });
                     break;
@@ -231,7 +234,7 @@
                     var id2 = userInput !== "5" ? prompt("Enter second ID:") : null;
 
                     makeAjaxRequest(userInput, { "id1": id1, "id2": id2 }, function (response) {
-                        resultElement.textContent = "Result: " + response;
+                        resultElement.textContent = "Result: " + JSON.stringify(response);
                         resultContainer.style.display = "block";
                     });
                     break;
@@ -241,7 +244,7 @@
                     var id2 = userInput !== "5" ? prompt("Enter second ID:") : null;
 
                     makeAjaxRequest(userInput, { "id1": id1, "id2": id2 }, function (response) {
-                        resultElement.textContent = "Result: " + response;
+                        resultElement.textContent = "Result: " + JSON.stringify(response);
                         resultContainer.style.display = "block";
                     });
                     break;
@@ -251,7 +254,8 @@
                     var id2 = userInput !== "5" ? prompt("Enter second ID:") : null;
 
                     makeAjaxRequest(userInput, { "id1": id1, "id2": id2 }, function (response) {
-                        resultElement.textContent = "Result: " + response;
+                        console.log("hi");
+                        resultElement.textContent = "Result: " + JSON.stringify(response);
                         resultContainer.style.display = "block";
                     });
                     break;
@@ -259,14 +263,14 @@
                 case "5":
                     var id5 = prompt("Enter ID:");
                     makeAjaxRequest(userInput, { "id": id5 }, function (response) {
-                        resultElement.textContent = "Result: " + response;
+                        resultElement.textContent = "Result: " + JSON.stringify(response);
                         resultContainer.style.display = "block";
                     });
                     break;
 
                 case "6":
                     makeAjaxRequest(userInput, null, function (response) {
-                        resultElement.textContent = "Result: " + response;
+                        resultElement.textContent = "Result: " + JSON.stringify(response);
                         resultContainer.style.display = "block";
                     });
                     break;
@@ -310,7 +314,7 @@
             var familyTree = new FamilyTree(familyTreeContainer, {
                 mode: "dark",
                 //mouseScrool: FamilyTree.action.none,
-                //scaleInitial: FamilyTree.match.boundary,
+                scaleInitial: FamilyTree.match.boundary,
                 template: "hugo",
 
                 nodeBinding: {
