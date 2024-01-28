@@ -103,16 +103,6 @@ The Trie dictionary serves as a fundamental component of the Hashed-Genealogy-Gr
    - `getKey`: Retrieve the key associated with a given value in the Trie.
    - `values`: Get a vector of all key-value pairs in the Trie.
 
-### Time Complexity
-
-- **Insertion Time Complexity:** O(L), where L is the length of the hash value.
-  
-- **Retrieval Time Complexity:** O(L), where L is the length of the hash value.
-
-- **Search Time Complexity:** O(L), where L is the length of the hash value.
-
-- **Key Enumeration Time Complexity:** O(N * L), where N is the total number of persons and L is the average length of hash values.
-
 These Trie Dictionary Operations play a crucial role in achieving fast access and optimal performance within Hashed-Genealogy-Graph. They provide an efficient way to manage and retrieve information about individuals in the family tree.
 
 ## Functionality
@@ -247,6 +237,46 @@ Include the Trie library in your C++ files as follows:
 
 Feel free to explore and leverage the Trie Dictionary Structure in your projects, be it Python or C++, for efficient storage and retrieval of family tree elements.
 
+## Additional Web Application Integration
+
+In addition to the core functionalities provided by Hashed-Genealogy-Graph, I've integrated a web application using CrowCpp to enhance user interaction and visualization of family trees.
+
+### Web Application Features
+
+- **CrowCpp Integration:** The web application is built using Crow, a C++ framework for creating HTTP or WebSocket web services. This integration enables the creation of a dynamic and responsive user interface for exploring family trees.
+
+- **Interactive Visualization:** Leveraging JavaScript and the Balkan library, the web application provides an interactive and visually appealing representation of family trees. Users can navigate through generations, view detailed information about individuals, and explore relationships easily.
+
+- **Real-time Updates:** The web application ensures real-time updates to reflect any changes made to the family tree. Whether it's adding new members or modifying existing relationships, the web interface keeps the displayed information synchronized with the underlying Hashed-Genealogy-Graph data structure.
+
+### Web Application Architecture
+
+The CrowCpp backend serves as the communication bridge between the Hashed-Genealogy-Graph data structure and the user interface. It handles requests for family tree information, updates, and interactions.
+
+The front-end, implemented in JavaScript with the Balkan library, communicates with the CrowCpp backend through AJAX requests. This separation of concerns allows for a modular and maintainable architecture, enabling easy future enhancements to the user interface.
+
+### Getting Started with the Web Application
+
+To run the web application:
+
+1. Ensure the Hashed-Genealogy-Graph library is properly installed as per the provided instructions.
+
+2. Build the CrowCpp backend:
+
+    ```bash
+    chmod +x build_webapp.sh
+    ./build_webapp.sh
+    ```
+
+3. Run the CrowCpp web server:
+
+    ```bash
+    ./webapp
+    ```
+
+4. Open your web browser and navigate to `http://localhost:8080` to access the Hashed-Genealogy-Graph web application.
+
+Explore the combined power of Hashed-Genealogy-Graph and the web application to efficiently manage, visualize, and interact with family trees. Contributions and feedback on the web application integration are highly encouraged. Happy exploring!
 ## Contributing
 
 Contributions are welcome! If you have any suggestions, improvements, or bug fixes, feel free to open an issue or create a pull request.
