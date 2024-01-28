@@ -103,16 +103,6 @@ The Trie dictionary serves as a fundamental component of the Hashed-Genealogy-Gr
    - `getKey`: Retrieve the key associated with a given value in the Trie.
    - `values`: Get a vector of all key-value pairs in the Trie.
 
-### Time Complexity
-
-- **Insertion Time Complexity:** O(L), where L is the length of the hash value.
-  
-- **Retrieval Time Complexity:** O(L), where L is the length of the hash value.
-
-- **Search Time Complexity:** O(L), where L is the length of the hash value.
-
-- **Key Enumeration Time Complexity:** O(N * L), where N is the total number of persons and L is the average length of hash values.
-
 These Trie Dictionary Operations play a crucial role in achieving fast access and optimal performance within Hashed-Genealogy-Graph. They provide an efficient way to manage and retrieve information about individuals in the family tree.
 
 ## Functionality
