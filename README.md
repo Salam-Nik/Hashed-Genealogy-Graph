@@ -277,6 +277,12 @@ To run the web application:
 4. Open your web browser and navigate to `http://localhost:8080` to access the Hashed-Genealogy-Graph web application.
 
 Explore the combined power of Hashed-Genealogy-Graph and the web application to efficiently manage, visualize, and interact with family trees. Contributions and feedback on the web application integration are highly encouraged. Happy exploring!
+
+![image 1](https://github.com/Salam-Nik/Hashed-Genealogy-Graph/blob/main/images/image1.png)
+
+![image 2](https://github.com/Salam-Nik/Hashed-Genealogy-Graph/blob/main/images/image2.png)
+
+![image 3](https://github.com/Salam-Nik/Hashed-Genealogy-Graph/blob/main/images/image3.png)
 ## Contributing
 
 Contributions are welcome! If you have any suggestions, improvements, or bug fixes, feel free to open an issue or create a pull request.
