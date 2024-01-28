@@ -16,6 +16,10 @@ Hashed-Genealogy-Graph is a data structure designed for storing family trees wit
   - [Usage](#usage)
     - [Python Library Integration](#1-python-library-integration)
     - [C++ Library Integration](#2-c-library-integration)
+       - [Web Application Integration](#web-application-integration)
+          - [Web Application Features](#web-application-features)
+          - [Web Application Architecture](#web-application-architecture)
+          - [Getting Started with the Web Application](#getting-started-with-the-web-application)
 
 ## Introduction
 
