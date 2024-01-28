@@ -264,14 +264,14 @@ To run the web application:
 2. Build the CrowCpp backend:
 
     ```bash
-    chmod +x build_webapp.sh
-    ./build_webapp.sh
+    chmod +x build.sh
+    ./build.sh
     ```
 
 3. Run the CrowCpp web server:
 
     ```bash
-    ./webapp
+    ./main.exe
     ```
 
 4. Open your web browser and navigate to `http://localhost:8080` to access the Hashed-Genealogy-Graph web application.
