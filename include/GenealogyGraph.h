@@ -84,6 +84,7 @@ public:
     // pair<Person *, Person *> findMostDistantRelationship();
 
     pair<string, string> findMostDistantRelationship();
+    void deletePerson(int id);
 };
 
 #endif // HASHEDGENEALOGYGRAPH_H

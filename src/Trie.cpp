@@ -163,6 +163,52 @@ vector<pair<string, T*>> Trie<T>::values() {
     return result;
 }
 
+template <typename T>
+void Trie<T>::erase(const string &key)
+{
+    TrieNode<T> *node = root;
+    vector<TrieNode<T> *> path;
+    for (char c : key)
+    {
+        auto it = node->children.find(c);
+        if (it == node->children.end())
+        {
+            return;
+        }
+        path.push_back(node);
+        node = it->second;
+    }
+
+    if (node->data)
+    {
+        delete node->data;
+        node->data = nullptr;
+    }
+
+    if (!node->children.empty())
+    {
+        return;
+    }
+
+    for (int i = path.size() - 1; i >= 0; --i)
+    {
+        TrieNode<T> *currentNode = path[i];
+        char lastChar = key[key.size() - 1 - i];
+        auto childIt = currentNode->children.find(lastChar);
+        if (childIt != currentNode->children.end() && childIt->second->children.empty() && !childIt->second->data)
+        {
+            delete childIt->second;
+            currentNode->children.erase(childIt);
+        }
+        else
+        {
+
+            break;
+        }
+    }
+}
+
+
 
  
 template class Trie<Person>;

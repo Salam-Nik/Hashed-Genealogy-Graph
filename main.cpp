@@ -1,106 +1,93 @@
-#include <iostream>
+
 #include "include/GenealogyGraph.h"
-#include <unordered_map>
-#include <vector>
 
-using namespace std;
+int main()
+{
+    GenealogyGraph hgg;
 
+    std::ifstream jsonFile("dataset/genealogy_dataset.json");
+    if (!jsonFile.is_open())
+    {
+        cerr << "Error opening JSON file" << endl;
+        return 1;
+    }
 
-int main() {
-    std::unordered_map<int, std::vector<std::string>> ds = {
-        {18, {"Valerie", "Lewis", "18"}},
-        {12, {"Billy", "Wilson", "12"}},
-        {39, {"Jonathon", "Burke", "39"}},
-        {8, {"Daniel", "Lawrence", "8"}},
-        {34, {"Craig", "Davis", "34"}},
-        {13, {"Leslie", "Liu", "13"}},
-        {7, {"Tyrone", "Santos", "7"}},
-        {19, {"Erin", "Austin", "19"}},
-        {37, {"Kyle", "Davis", "37"}},
-        {2, {"Benjamin", "Arias", "2"}},
-        {30, {"Karen", "Williams", "30"}},
-        {6, {"Timothy", "Thomas", "6"}},
-        {38, {"Robert", "Garrison", "38"}},
-        {22, {"Joseph", "Salas", "22"}},
-        {47, {"Ronald", "Vance", "47"}},
-        {21, {"Adam", "Rodriguez", "21"}}
-    };
+    std::ostringstream jsonContent;
+    jsonContent << jsonFile.rdbuf();
+    std::string jsonString = jsonContent.str();
 
-     GenealogyGraph graph(true);
+    rapidjson::Document json_data;
+    json_data.Parse(jsonString.c_str());
 
-    //  vector<int> children;
-    //  children.emplace_back(21);
+    if (json_data.HasParseError())
+    {
+        cerr << "Error parsing JSON file: " << endl;
+        return 1;
+    }
 
-    // const auto& spouse1 = ds[6];
-    // const auto& spouse2 = ds[0];
+    hgg.addEdge(jsonString.c_str());
 
+    while (true)
+    {
+        string result;
+        int id1;
+        int id2;
+        int ch;
+        cin >> ch;
+        if (ch != 5 && ch != 6)
+            cin >> id1 >> id2;
+        else if (ch == 5)
+            cin >> id1;
+        switch (ch)
+        {
+        case 1:
+        {
+            result = "{\"result\": \"" + std::to_string(hgg.isAncestor(id1, id2)) + "\"}";
 
+            break;
+        }
+        case 2:
+        {
+            string res = hgg.isSibling(id1, id2) ? "TRUE" : "FALSE";
+            result = "{\"result\": \"" + res + "\"}";
+            break;
+        }
+        case 3:
+        {
+            string res = hgg.isDistantRelative(id1, id2) ? "TRUE" : "FALSE";
+            result = "{\"result\": \"" + res + "\"}";
+            break;
+        }
+        case 4:
+        {
 
+            cout << "id1 " << endl;
+            result = "{\"result\": \"" + hgg.findCommonAncestor(id1, id2) + "\"}";
+            cout << result << endl;
+            break;
+        }
+        case 5:
+        {
+            string res = to_string(hgg.findFurthestDescendant(id1));
+            result = "{\"result\": \"" + res + "\"}";
+            break;
+        }
 
-    // graph.addEdge(
-    //     6,
-    //      88,
-    //     children);
+        case 6:
+        {
+            auto distantRelationship = hgg.findMostDistantRelationship();
+            result = "{\"result\": \"" + distantRelationship.first + " and " + distantRelationship.second + "\"}";
+            break;
+        }
 
-    //  cout << "hi " << endl;
-    // cout << graph.findFurthestDescendant(21);
-    // while (true) {
-    //     std::cout << "\nGenealogy Program Menu:" << std::endl;
-    //     std::cout << "1. Check Ancestor" << std::endl;
-    //     std::cout << "2. Check Sibling" << std::endl;
-    //     std::cout << "3. Check Distant Relative" << std::endl;
-    //     std::cout << "4. Find Common Ancestor" << std::endl;
-    //     std::cout << "5. Find Furthest Descendant" << std::endl;
-    //     std::cout << "Type 'exit' to quit" << std::endl;
+        case 'e':
+            result = "Exiting the program.";
+            break;
 
-    //     std::string user_input;
-    //     std::cout << "Enter your choice: ";
-    //     std::cin >> user_input;
-
-    //     if (user_input == "exit") {
-    //         std::cout << "Exiting the program." << std::endl;
-    //         break;
-    //     }
-
-    //     if (user_input != "1" && user_input != "2" && user_input != "3" && user_input != "4" && user_input != "5") {
-    //         std::cout << "Invalid choice. Please enter a valid option." << std::endl;
-    //         continue;
-    //     }
-
-    //     int id1;
-    //     std::cout << "Enter first ID 1: ";
-    //     std::cin >> id1;
-    //     const auto& info1 = ds[id1];
-    //     const std::string& name1 = info1[0];
-    //     const std::string& last_name1 = info1[1];
-
-    //     int id2;
-    //     std::string name2;
-    //     std::string last_name2;
-
-    //     if (user_input != "5") {
-    //         std::cout << "Enter second ID 2: ";
-    //         std::cin >> id2;
-    //         const auto& info2 = ds[id2];
-    //         name2 = info2[0];
-    //         last_name2 = info2[1];
-    //     }
-
-    //     bool result;
-    //     if (user_input == "1") {
-    //         result = hgg.isAncestor(graph, name1, last_name1, id1, name2, last_name2, id2);
-    //     } else if (user_input == "2") {
-    //         result = hgg.isSibling(graph, name1, last_name1, id1, name2, last_name2, id2);
-    //     } else if (user_input == "3") {
-    //         result = hgg.isDistantRelative(graph, name1, last_name1, id1, name2, last_name2, id2);
-    //     } else if (user_input == "4") {
-    //         result = hgg.findCommonAncestor(graph, name1, last_name1, id1, name2, last_name2, id2);
-    //     } else if (user_input == "5") {
-    //         result = hgg.findFurthestDescendant(graph, name1, last_name1, id1);
-    //     }
-
-    //     std::cout << "\nResult: " << std::boolalpha << result << std::endl;
-    // }
-
-    return 0;
+        default:
+            result = "Invalid option. Please enter a valid option.";
+            break;
+        }
+        cout << result << endl;
+    }
 }

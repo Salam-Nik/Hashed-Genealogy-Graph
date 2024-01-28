@@ -60,6 +60,7 @@ public:
 
     string getKey(const T &value) const;
     vector<pair<string, T *>> values();
+    void erase(const string &key);
 
 private:
     void deleteSubtree(TrieNode<T> *node);
